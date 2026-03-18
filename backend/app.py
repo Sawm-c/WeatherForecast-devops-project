@@ -25,7 +25,7 @@ def get_weather():
         return jsonify({"error": "City is required"}), 400
     
     api_key = os.getenv('API_KEY')
-    if not api_key  :
+    if not api_key :
         return jsonify({"error": "Missing API Key. Check .env file."}), 500
 
     try:
