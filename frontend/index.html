@@ -32,7 +32,7 @@
                     <svg class="w-5 h-5 mr-3 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
                     </svg>
-                    <input type="text" value="Lahore" class="bg-transparent border-none outline-none text-sm w-full text-white placeholder-white/70 focus:ring-0">
+                    <input type="text" value="Hanoi" class="bg-transparent border-none outline-none text-sm w-full text-white placeholder-white/70 focus:ring-0">
                 </div>
                 <svg class="w-4 h-4 opacity-70 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -40,20 +40,20 @@
             </div>
 
             <div class="flex flex-col items-center mt-4 w-full">
-                <h1 id="temp" class="text-[3.8rem] font-semibold leading-none drop-shadow-md" style="letter-spacing: -1.2px;">31&deg;</h1>
+                <h1 id="temp" class="text-[3.8rem] font-semibold leading-none drop-shadow-md" style="letter-spacing: -1.2px;">--&deg;</h1>
             </div>
 
             <div class="mt-3 w-full flex flex-col items-center flex-1">
-                <p id="feels" class="text-[1.1rem] font-light tracking-normal mb-6 drop-shadow-sm opacity-90">Feels like: 34&deg;</p>
+                <p id="feels" class="text-[1.1rem] font-light tracking-normal mb-6 drop-shadow-sm opacity-90">Feels like: --&deg;</p>
             </div>
 
             <div class="w-full space-y-4 pb-8">
                 <div class="flex items-center justify-between">
-                    <span id="humidity" class="text-xl font-medium leading-none drop-shadow-sm">58%</span>
+                    <span id="humidity" class="text-xl font-medium leading-none drop-shadow-sm">--%</span>
                     <span class="opacity-95 text-[12px] font-normal">of humidity</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span id="clouds" class="text-xl font-medium leading-none drop-shadow-sm">0%</span>
+                    <span id="clouds" class="text-xl font-medium leading-none drop-shadow-sm">--%</span>
                     <span class="opacity-95 text-[12px] font-normal">of Clouds</span>
                 </div>
             </div>
@@ -65,67 +65,30 @@
                 <div>
                     <h2 class="text-[14px] font-semibold opacity-95 mb-1 tracking-tighter" style="letter-spacing: -0.5px;">Weather Forecast</h2>
                     
-                    <h1 id="weather" class="text-[3.8rem] font-bold mb-5 drop-shadow-lg leading-tight" style="letter-spacing: -2.2px;">Sunny</h1>
+                    <h1 id="weather" class="text-[3.8rem] font-bold mb-5 drop-shadow-lg leading-tight" style="letter-spacing: -2.2px;">--</h1>
                     
                     <div class="flex items-center text-[12px] opacity-90 mb-6 font-normal">
                         <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.242-4.243a8 8 0 1111.314 0z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
-                        <span id="location">Lahore, PK, September 13, 2024 Sept. 13, 2024, 10:24 a.m.</span>
+                        <span id="location">Loading location...</span>
                     </div>
 
                     <div class="mt-3 max-w-2xl">
                         <p id="desc" class="text-[14px] leading-[1.7] text-white font-normal drop-shadow-sm">
-                            Wind 2.57 kilometres per hour. Pressure is 1001 mb.<br>
-                            Visibility is 6000. Maximum temperature is 31&deg;.<br>
-                            Minimum temperature is 29&deg;.
+                            Loading details...
                         </p>
                     </div>
                 </div>
             </div>
 
             <div class="w-full mt-auto pt-6">
-                <div class="grid grid-cols-5 gap-2 text-center">
-                    <div>
-                        <p class="text-[11px] opacity-95 mb-3 font-medium">11:00</p>
-                        <p class="text-[1.8rem] font-medium mb-1 drop-shadow-sm leading-none">25.9&deg;</p>
-                        <p class="text-[10px] opacity-85 font-normal">Humidity: 44.8%</p>
+                <div id="forecast-grid" class="grid grid-cols-5 gap-2 text-center">
                     </div>
-                    <div>
-                        <p class="text-[11px] opacity-95 mb-3 font-medium">12:00</p>
-                        <p class="text-[1.8rem] font-medium mb-1 drop-shadow-sm leading-none">28.9&deg;</p>
-                        <p class="text-[10px] opacity-85 font-normal">Humidity: 46.2%</p>
-                    </div>
-                    <div>
-                        <p class="text-[11px] opacity-95 mb-3 font-medium">13:00</p>
-                        <p class="text-[1.8rem] font-medium mb-1 drop-shadow-sm leading-none">26.5&deg;</p>
-                        <p class="text-[10px] opacity-85 font-normal">Humidity: 48.2%</p>
-                    </div>
-                    <div>
-                        <p class="text-[11px] opacity-95 mb-3 font-medium">14:00</p>
-                        <p class="text-[1.8rem] font-medium mb-1 drop-shadow-sm leading-none">21.5&deg;</p>
-                        <p class="text-[10px] opacity-85 font-normal">Humidity: 53.7%</p>
-                    </div>
-                    <div>
-                        <p class="text-[11px] opacity-95 mb-3 font-medium">15:00</p>
-                        <p class="text-[1.8rem] font-medium mb-1 drop-shadow-sm leading-none">26.1&deg;</p>
-                        <p class="text-[10px] opacity-85 font-normal">Humidity: 58.1%</p>
-                    </div>
-                </div>
 
-                <div class="w-full h-12 mt-4 relative">
-                    <svg class="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 100 20" preserveAspectRatio="none">
-                        <path d="M 10 10 C 20 6, 20 6, 30 6 C 40 6, 40 9, 50 9 C 60 9, 60 16, 70 16 C 80 16, 80 10, 90 10" 
-                              fill="none" stroke="#f97316" stroke-width="0.4"></path>
-                        
-                        <circle cx="10" cy="10" r="1.5" fill="#f97316" />
-                        <circle cx="30" cy="6" r="1.5" fill="#f97316" />
-                        <circle cx="50" cy="9" r="1.5" fill="#f97316" />
-                        <circle cx="70" cy="16" r="1.5" fill="#f97316" />
-                        <circle cx="90" cy="10" r="1.5" fill="#f97316" />
-                    </svg>
-                </div>
+                <div id="forecast-chart" class="w-full h-12 mt-4 relative">
+                    </div>
             </div>
 
         </div>
@@ -136,50 +99,117 @@
     const input = document.querySelector("input");
     const temp = document.getElementById("temp");
         
-        async function fetchWeather(city) {
-    const res = await fetch(`http://127.0.0.1:5000/api/weather?city=${city}`)
-    const data = await res.json();
+    async function fetchWeather(city) {
+        try {
+            const res = await fetch(`/api/weather?city=${city}`);
+            const data = await res.json();
 
-    console.log(data);
+            if (data.main) {
+                // 1. Cập nhật thời tiết hiện tại
+                document.getElementById("temp").innerHTML = Math.round(data.main.temp) + "°";
+                document.getElementById("feels").innerHTML = "Feels like: " + Math.round(data.main.feels_like) + "°";
+                document.getElementById("humidity").innerHTML = data.main.humidity + "%";
+                document.getElementById("clouds").innerHTML = data.clouds.all + "%";
+                document.getElementById("weather").innerHTML = data.weather[0].main;
 
-    if (data.main) {
-        // nhiệt độ
-        document.getElementById("temp").innerHTML =
-            Math.round(data.main.temp) + "°";
+                // Xử lý ngày giờ thực tế của khu vực
+                const d = new Date();
+                const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+                const cityDate = new Date(utc + (data.timezone * 1000));
 
-        // feels like
-        document.getElementById("feels").innerHTML =
-            "Feels like: " + Math.round(data.main.feels_like) + "°";
+                const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-        // humidity
-        document.getElementById("humidity").innerHTML =
-            data.main.humidity + "%";
+                const dayName = days[cityDate.getDay()];
+                const monthName = months[cityDate.getMonth()];
+                const dateNum = cityDate.getDate();
+                const year = cityDate.getFullYear();
+                
+                let hours = cityDate.getHours();
+                let minutes = cityDate.getMinutes();
+                const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+                
+                hours = hours % 12;
+                hours = hours ? hours : 12; 
+                minutes = minutes < 10 ? '0' + minutes : minutes;
 
-        // clouds
-        document.getElementById("clouds").innerHTML =
-            data.clouds.all + "%";
+                const country = data.sys && data.sys.country ? data.sys.country : "";
+                document.getElementById("location").innerHTML = `${data.name}, ${country}, ${dayName}, ${monthName} ${dateNum}, ${year}, ${hours}:${minutes} ${ampm}`;
 
-        // weather (Sunny, Rain,...)
-        document.getElementById("weather").innerHTML =
-            data.weather[0].main;
+                document.getElementById("desc").innerHTML =
+                    `Wind ${data.wind.speed} metres per second. Pressure is ${data.main.pressure} hPa.<br>
+                     Visibility ${data.visibility} metres. Maximum temperature is ${Math.round(data.main.temp_max)}°.<br>
+                     Minimum temperature is ${Math.round(data.main.temp_min)}°.`;
 
-        // location
-        document.getElementById("location").innerHTML =
-            data.name;
-
-        // description chi tiết
-        document.getElementById("desc").innerHTML =
-            `Wind ${data.wind.speed} m/s. Pressure ${data.main.pressure} hPa.<br>
-             Visibility ${data.visibility}.`;
+                // 2. Cập nhật biểu đồ dự báo (nếu backend trả về mảng forecast)
+                if (data.forecast && data.forecast.length > 0) {
+                    updateForecastUI(data.forecast);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching weather data:", error);
+        }
     }
-}
 
-        input.addEventListener("keydown", (e) => {
-         if (e.key === "Enter") {
-        fetchWeather(e.target.value);
+    // Hàm vẽ biểu đồ động và hiển thị 5 cột thời gian
+    function updateForecastUI(forecastList) {
+        const gridContainer = document.getElementById("forecast-grid");
+        const chartContainer = document.getElementById("forecast-chart");
+
+        let gridHTML = "";
+        let temps = [];
+
+        // Tạo HTML cho 5 cột
+        forecastList.forEach((item) => {
+            temps.push(item.temp);
+            gridHTML += `
+                <div>
+                    <p class="text-[11px] opacity-95 mb-3 font-medium">${item.time}</p>
+                    <p class="text-[1.8rem] font-medium mb-1 drop-shadow-sm leading-none">${item.temp}&deg;</p>
+                    <p class="text-[10px] opacity-85 font-normal">Humidity: ${item.humidity}%</p>
+                </div>
+            `;
+        });
+        gridContainer.innerHTML = gridHTML;
+
+        // Vẽ biểu đồ SVG
+        const maxTemp = Math.max(...temps);
+        const minTemp = Math.min(...temps);
+        const xCoords = [10, 30, 50, 70, 90]; 
+        let points = [];
+
+        temps.forEach((t, index) => {
+            let y = 16; 
+            if (maxTemp !== minTemp) {
+                // Tính tọa độ Y từ 4 đến 16
+                y = 16 - ((t - minTemp) / (maxTemp - minTemp)) * 12;
+            } else {
+                y = 10; // Nếu nhiệt độ bằng nhau hết thì vẽ đường thẳng ở giữa
+            }
+            points.push({ x: xCoords[index], y: y });
+        });
+
+        const pathD = `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y} L ${points[2].x} ${points[2].y} L ${points[3].x} ${points[3].y} L ${points[4].x} ${points[4].y}`;
+
+        let circlesHTML = "";
+        points.forEach(p => {
+            circlesHTML += `<circle cx="${p.x}" cy="${p.y}" r="1.5" fill="#f97316" />`;
+        });
+
+        chartContainer.innerHTML = `
+            <svg class="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 100 20" preserveAspectRatio="none">
+                <path d="${pathD}" fill="none" stroke="#f97316" stroke-width="0.5" stroke-linejoin="round"></path>
+                ${circlesHTML}
+            </svg>
+        `;
     }
-});
-fetchWeather("Hanoi");
+
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            fetchWeather(e.target.value);
+        }
+    });
+
+    fetchWeather(input.value);
 </script>
-
 </html>
