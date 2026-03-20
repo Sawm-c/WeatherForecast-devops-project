@@ -3,28 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Dashboard - Refined Layout</title>
+    <title>Weather Dashboard - Smart Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
-        body { 
-            font-family: 'Poppins', sans-serif; 
-        }
-        
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden bg-[#0f0f0f] flex items-center justify-center p-8 text-white">
 
-    <div class="relative w-full max-w-[1150px] h-[650px] rounded-[2rem] overflow-hidden flex shadow-[0_20px_50px_rgba(0,0,0,0.6)] bg-[#56b0e8]">
-        
-        <img src="https://images.unsplash.com/photo-1601297183314-c09d3958971f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
+    <div class="relative w-full max-w-[1150px] h-[650px] rounded-[2rem] overflow-hidden flex shadow-[0_20px_50px_rgba(0,0,0,0.6)] bg-gray-900">  
+        <img id="sky-background" 
+             src="https://images.unsplash.com/photo-1601297183314-c09d3958971f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
              alt="Sky background" 
-             class="absolute inset-0 w-full h-full object-cover opacity-90 mix-blend-overlay z-0 pointer-events-none">
+             class="absolute inset-0 w-full h-full object-cover opacity-100 z-0 pointer-events-none transition-all duration-1000">
              
         <div class="absolute inset-0 bg-gradient-to-br from-[#4db0f5]/40 to-[#80c8f2]/20 z-0 pointer-events-none"></div>
-
+        <!-- <div class="absolute inset-0 bg-gradient-to-br from-black/40 to-transparent z-0 pointer-events-none"></div> -->
+        
         <div class="w-[280px] h-full bg-white/10 backdrop-blur-xl border-r border-white/20 flex flex-col p-8 z-10 relative">
             
             <div class="relative w-full border-b border-white/40 pb-2 flex items-center justify-between mb-8">
@@ -32,22 +29,27 @@
                     <svg class="w-5 h-5 mr-3 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
                     </svg>
-                    <input type="text" value="Hanoi" class="bg-transparent border-none outline-none text-sm w-full text-white placeholder-white/70 focus:ring-0">
+                    <input type="text" placeholder="Enter city" value="Hanoi" class="bg-transparent border-none outline-none text-sm w-full text-white placeholder-white/70 focus:ring-0">
                 </div>
-                <svg class="w-4 h-4 opacity-70 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg id="search-btn" class="w-4 h-4 opacity-70 cursor-pointer hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
             </div>
 
-            <div class="flex flex-col items-center mt-4 w-full">
+            <div class="flex flex-col items-center mt-2 w-full">
                 <h1 id="temp" class="text-[3.8rem] font-semibold leading-none drop-shadow-md" style="letter-spacing: -1.2px;">--&deg;</h1>
             </div>
 
-            <div class="mt-3 w-full flex flex-col items-center flex-1">
-                <p id="feels" class="text-[1.1rem] font-light tracking-normal mb-6 drop-shadow-sm opacity-90">Feels like: --&deg;</p>
+            <div class="mt-2 w-full flex flex-col items-center space-y-2"> 
+                <p id="feels" class="text-[1.1rem] font-light tracking-normal drop-shadow-sm opacity-90">Feels like: --&deg;</p>
+                <p id="summary" class="text-[14px] leading-[1.65] font-normal drop-shadow-sm opacity-95 text-center px-2 transition-all duration-300 min-h-[48px] flex items-center justify-center">
+                    Gathering insights...
+                </p>
             </div>
 
-            <div class="w-full space-y-4 pb-8">
+            <div class="flex-1 w-full flex items-center justify-center px-1 py-4 text-center"></div>
+
+            <div class="w-full space-y-4 pb-4 mt-auto">
                 <div class="flex items-center justify-between">
                     <span id="humidity" class="text-xl font-medium leading-none drop-shadow-sm">--%</span>
                     <span class="opacity-95 text-[12px] font-normal">of humidity</span>
@@ -60,14 +62,12 @@
         </div>
 
         <div class="flex-1 h-full flex flex-col p-10 lg:p-12 z-10 relative">
-            
             <div class="flex-1 flex flex-col justify-between mt-8">
                 <div>
                     <h2 class="text-[14px] font-semibold opacity-95 mb-1 tracking-tighter" style="letter-spacing: -0.5px;">Weather Forecast</h2>
+                    <h1 id="weather" class="text-[3.8rem] font-bold mb-4 drop-shadow-lg leading-tight" style="letter-spacing: -2.2px;">--</h1>
                     
-                    <h1 id="weather" class="text-[3.8rem] font-bold mb-3 drop-shadow-lg leading-tight" style="letter-spacing: -2.2px;">--</h1>
-                    
-                    <div class="flex items-center text-[12px] opacity-90 mb-1 font-normal">
+                    <div class="flex items-center text-[12px] opacity-90 mb-4 font-normal">
                         <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.242-4.243a8 8 0 1111.314 0z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -75,11 +75,7 @@
                         <span id="location">Loading location...</span>
                     </div>
 
-                    <p id="summary" class="text-[15px] font-semibold mb-5 italic drop-shadow-sm transition-colors duration-300">
-                        Đang phân tích dữ liệu...
-                    </p>
-
-                    <div class="mt-3 max-w-2xl">
+                    <div class="mt-2 max-w-2xl">
                         <p id="desc" class="text-[14px] leading-[1.7] text-white font-normal drop-shadow-sm">
                             Loading details...
                         </p>
@@ -88,35 +84,36 @@
             </div>
 
             <div class="w-full mt-auto pt-6">
-                <div id="forecast-grid" class="grid grid-cols-5 gap-2 text-center">
-                    </div>
-
-                <div id="forecast-chart" class="w-full h-12 mt-4 relative">
-                    </div>
+                <div id="forecast-grid" class="grid grid-cols-5 gap-2 text-center"></div>
+                <div id="forecast-chart" class="w-full h-12 mt-4 relative"></div>
             </div>
-
         </div>
     </div>
 
 </body>
 <script>
     const input = document.querySelector("input");
-        
+    const background_img = document.getElementById("sky-background");
+
     async function fetchWeather(city) {
         try {
-            // Lấy dữ liệu qua API (không cần http://127.0.0.1:5000 vì code chung nhà)
             const res = await fetch(`/api/weather?city=${city}`);
             const data = await res.json();
 
             if (data.main) {
-                // 1. Cập nhật thời tiết hiện tại
+                // 1. Cập nhật ảnh nền động
+               if (data.backgroundImage) {
+                    background_img.src = data.backgroundImage;
+                }
+
+                // 2. Cập nhật các dữ liệu thời tiết cơ bản
                 document.getElementById("temp").innerHTML = Math.round(data.main.temp) + "°";
                 document.getElementById("feels").innerHTML = "Feels like: " + Math.round(data.main.feels_like) + "°";
                 document.getElementById("humidity").innerHTML = data.main.humidity + "%";
                 document.getElementById("clouds").innerHTML = data.clouds.all + "%";
                 document.getElementById("weather").innerHTML = data.weather[0].main;
 
-                // Xử lý ngày giờ thực tế
+                // 3. Xử lý ngày tháng năm
                 const d = new Date();
                 const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
                 const cityDate = new Date(utc + (data.timezone * 1000));
@@ -140,33 +137,34 @@
                 const country = data.sys && data.sys.country ? data.sys.country : "";
                 document.getElementById("location").innerHTML = `${data.name}, ${country} | ${dayName}, ${monthName} ${dateNum}, ${year} - ${hours}:${minutes} ${ampm}`;
 
-                // Chi tiết
+                // 4. Cập nhật phần mô tả chi tiết
                 document.getElementById("desc").innerHTML =
-                    `Wind ${data.wind.speed} m/s. Pressure is ${data.main.pressure} hPa.<br>
-                     Visibility ${(data.visibility / 1000).toFixed(1)} km. Max temp is ${Math.round(data.main.temp_max)}°.<br>
-                     Min temp is ${Math.round(data.main.temp_min)}°.`;
+                    `Wind ${data.wind.speed} metres per second. Pressure is ${data.main.pressure} hPa.<br>
+                     Visibility is ${(data.visibility / 1000).toFixed(1)} km. Maximum temperature is ${Math.round(data.main.temp_max)}°.<br>
+                     Minimum temperature is ${Math.round(data.main.temp_min)}°.`;
 
-                // Cập nhật Cảnh báo thông minh (Mới)
+                // 5. Cập nhật Cảnh báo thông minh (Smart Advice)
                 if (data.summary) {
                     const summaryEl = document.getElementById("summary");
-                    summaryEl.innerHTML = data.summary;
-                    // Reset class và gán class màu mới nhận từ backend
-                    summaryEl.className = `text-[15px] font-semibold mb-5 italic drop-shadow-sm transition-colors duration-300 ${data.summary_color}`;
+                    summaryEl.innerHTML = `"${data.summary}"`;
+                    // Dùng classList.value để ghi đè an toàn các class Tailwind, cộng thêm màu từ backend
+                    summaryEl.className = `text-[13px] leading-[1.65] font-normal drop-shadow-sm opacity-95 text-center px-2 transition-all duration-300 min-h-[48px] flex items-center justify-center ${data.summary_color}`;
                 }
 
-                // 2. Cập nhật biểu đồ dự báo
+                // 6. Cập nhật biểu đồ dự báo
                 if (data.forecast && data.forecast.length > 0) {
                     updateForecastUI(data.forecast);
                 }
             }
         } catch (error) {
             console.error("Error fetching weather data:", error);
-            document.getElementById("summary").innerHTML = "Không thể tải dữ liệu thời tiết.";
-            document.getElementById("summary").className = "text-red-400 text-[15px] font-semibold mb-5 italic drop-shadow-sm";
+            const summaryEl = document.getElementById("summary");
+            summaryEl.innerHTML = "Không thể tải dữ liệu thời tiết.";
+            summaryEl.className = "text-red-400 text-[14px] leading-[1.65] font-normal drop-shadow-sm text-center px-2 min-h-[48px] flex items-center justify-center";
         }
     }
 
-    // Hàm vẽ biểu đồ
+    // Các hàm vẽ biểu đồ và xử lý sự kiện giữ nguyên như cũ...
     function updateForecastUI(forecastList) {
         const gridContainer = document.getElementById("forecast-grid");
         const chartContainer = document.getElementById("forecast-chart");
@@ -186,7 +184,6 @@
         });
         gridContainer.innerHTML = gridHTML;
 
-        // Vẽ biểu đồ SVG
         const maxTemp = Math.max(...temps);
         const minTemp = Math.min(...temps);
         const xCoords = [10, 30, 50, 70, 90]; 
@@ -217,14 +214,25 @@
         `;
     }
 
-    // Lắng nghe sự kiện Enter ở ô tìm kiếm
+    function triggerSearch() {
+        const city = input.value.trim();
+        if (city !== "") {
+            input.blur(); 
+            const summaryEl = document.getElementById("summary");
+            summaryEl.innerHTML = "Fetching weather info...";
+            summaryEl.className = "text-[14px] leading-[1.65] font-normal drop-shadow-sm opacity-70 text-gray-300 text-center px-2 min-h-[48px] flex items-center justify-center";
+            fetchWeather(city);
+        }
+    }
+
+    const searchBtn = document.getElementById("search-btn");
+    searchBtn.addEventListener("click", triggerSearch);
+
     input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && e.target.value.trim() !== "") {
-            fetchWeather(e.target.value);
+        if (e.key === "Enter" && !e.isComposing) {
+            triggerSearch();
         }
     });
 
-    // Mặc định gọi hàm khi mới load
     fetchWeather(input.value);
 </script>
-</html>
