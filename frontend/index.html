@@ -20,7 +20,6 @@
              class="absolute inset-0 w-full h-full object-cover opacity-100 z-0 pointer-events-none transition-all duration-1000">
              
         <div class="absolute inset-0 bg-gradient-to-br from-[#4db0f5]/40 to-[#80c8f2]/20 z-0 pointer-events-none"></div>
-        <!-- <div class="absolute inset-0 bg-gradient-to-br from-black/40 to-transparent z-0 pointer-events-none"></div> -->
         
         <div class="w-[280px] h-full bg-white/10 backdrop-blur-xl border-r border-white/20 flex flex-col p-8 z-10 relative">
             
@@ -29,7 +28,7 @@
                     <svg class="w-5 h-5 mr-3 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
                     </svg>
-                    <input type="text" placeholder="Enter city" value="Hanoi" class="bg-transparent border-none outline-none text-sm w-full text-white placeholder-white/70 focus:ring-0">
+                    <input type="text" placeholder="Enter city" value="Ho Chi Minh" class="bg-transparent border-none outline-none text-sm w-full text-white placeholder-white/70 focus:ring-0">
                 </div>
                 <svg id="search-btn" class="w-4 h-4 opacity-70 cursor-pointer hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -58,6 +57,14 @@
                     <span id="clouds" class="text-xl font-medium leading-none drop-shadow-sm">--%</span>
                     <span class="opacity-95 text-[12px] font-normal">of Clouds</span>
                 </div>
+                <div class="flex items-center justify-between pt-2 border-t border-white/20 mt-2">
+                    <div>
+                        <span id="aqi-pm25" class="text-xl font-medium leading-none drop-shadow-sm">--</span>
+                        <p id="aqi-status" class="text-[11px] font-semibold mt-1 drop-shadow-sm">--</p>
+                    </div>
+                    <span class="opacity-95 text-[12px] font-normal text-right">PM 2.5<br>Air Quality</span>
+                </div>
+                
             </div>
         </div>
 
@@ -65,7 +72,7 @@
             <div class="flex-1 flex flex-col justify-between mt-8">
                 <div>
                     <h2 class="text-[14px] font-semibold opacity-95 mb-1 tracking-tighter" style="letter-spacing: -0.5px;">Weather Forecast</h2>
-                    <h1 id="weather" class="text-[3.8rem] font-bold mb-4 drop-shadow-lg leading-tight" style="letter-spacing: -2.2px;">--</h1>
+                    <h1 id="weather" class="text-[3.8rem] font-bold mb-4 drop-shadow-lg leading-tight capitalize" style="letter-spacing: -2.2px;">--</h1>
                     
                     <div class="flex items-center text-[12px] opacity-90 mb-4 font-normal">
                         <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,23 +104,33 @@
 
     async function fetchWeather(city) {
         try {
-            const res = await fetch(`/api/weather?city=${city}`);
+            const res = await fetch(`http://localhost:8080/api/weather?city=${city}`);
             const data = await res.json();
 
             if (data.main) {
-                // 1. Cập nhật ảnh nền động
                if (data.backgroundImage) {
                     background_img.src = data.backgroundImage;
                 }
 
-                // 2. Cập nhật các dữ liệu thời tiết cơ bản
+                // Cập nhật các dữ liệu thời tiết cơ bản
                 document.getElementById("temp").innerHTML = Math.round(data.main.temp) + "°";
                 document.getElementById("feels").innerHTML = "Feels like: " + Math.round(data.main.feels_like) + "°";
                 document.getElementById("humidity").innerHTML = data.main.humidity + "%";
                 document.getElementById("clouds").innerHTML = data.clouds.all + "%";
-                document.getElementById("weather").innerHTML = data.weather[0].main;
+                
+                if (data.aqi) {
+                    document.getElementById("aqi-pm25").innerHTML = data.aqi.pm25 + ' <span class="text-[12px] font-normal">µg/m³</span>';
+                    const aqiStatusEl = document.getElementById("aqi-status");
+                    aqiStatusEl.innerHTML = data.aqi.status;
+                    // Xóa các class màu cũ và thêm màu mới từ backend gửi sang
+                    aqiStatusEl.className = `text-[11px] mt-1 drop-shadow-sm transition-colors duration-500 ${data.aqi.color}`;
+                }
 
-                // 3. Xử lý ngày tháng năm
+                // Kết hợp Icon mới từ Backend vào chuỗi hiển thị
+                const weatherIcon = data.icon ? data.icon + " " : "";
+                document.getElementById("weather").innerHTML = weatherIcon + data.weather[0].description;
+
+                // Xử lý ngày tháng năm với Timezone Offset mới
                 const d = new Date();
                 const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
                 const cityDate = new Date(utc + (data.timezone * 1000));
@@ -137,21 +154,22 @@
                 const country = data.sys && data.sys.country ? data.sys.country : "";
                 document.getElementById("location").innerHTML = `${data.name}, ${country} | ${dayName}, ${monthName} ${dateNum}, ${year} - ${hours}:${minutes} ${ampm}`;
 
-                // 4. Cập nhật phần mô tả chi tiết
+                // Cập nhật phần mô tả chi tiết: Thêm lời khuyên độ ẩm (feels_advice)
+                const visibilityKm = (data.visibility / 1000).toFixed(1);
+                const feelsAdvice = data.feels_advice ? `<br><span class="text-blue-200">${data.feels_advice}</span>` : "";
+                
                 document.getElementById("desc").innerHTML =
-                    `Wind ${data.wind.speed} metres per second. Pressure is ${data.main.pressure} hPa.<br>
-                     Visibility is ${(data.visibility / 1000).toFixed(1)} km. Maximum temperature is ${Math.round(data.main.temp_max)}°.<br>
-                     Minimum temperature is ${Math.round(data.main.temp_min)}°.`;
+                    `Wind ${data.wind.speed.toFixed(1)} km/h. Pressure is ${data.main.pressure} hPa.<br>
+                     Visibility is ${visibilityKm} km. ${feelsAdvice}`;
 
-                // 5. Cập nhật Cảnh báo thông minh (Smart Advice)
+                // Cập nhật Cảnh báo thông minh (Smart Advice)
                 if (data.summary) {
                     const summaryEl = document.getElementById("summary");
                     summaryEl.innerHTML = `"${data.summary}"`;
-                    // Dùng classList.value để ghi đè an toàn các class Tailwind, cộng thêm màu từ backend
                     summaryEl.className = `text-[13px] leading-[1.65] font-normal drop-shadow-sm opacity-95 text-center px-2 transition-all duration-300 min-h-[48px] flex items-center justify-center ${data.summary_color}`;
                 }
 
-                // 6. Cập nhật biểu đồ dự báo
+                // Cập nhật biểu đồ dự báo
                 if (data.forecast && data.forecast.length > 0) {
                     updateForecastUI(data.forecast);
                 }
@@ -164,7 +182,6 @@
         }
     }
 
-    // Các hàm vẽ biểu đồ và xử lý sự kiện giữ nguyên như cũ...
     function updateForecastUI(forecastList) {
         const gridContainer = document.getElementById("forecast-grid");
         const chartContainer = document.getElementById("forecast-chart");
@@ -174,16 +191,19 @@
 
         forecastList.forEach((item) => {
             temps.push(item.temp);
+            // Hiển thị thêm item.rain (Xác suất mưa) bằng màu xanh biển nhạt để dễ phân biệt
             gridHTML += `
                 <div>
                     <p class="text-[11px] opacity-95 mb-3 font-medium">${item.time}</p>
                     <p class="text-[1.8rem] font-medium mb-1 drop-shadow-sm leading-none">${item.temp}&deg;</p>
-                    <p class="text-[10px] opacity-85 font-normal">Humidity: ${item.humidity}%</p>
+                    <p class="text-[11px] text-[#80c8f2] font-semibold drop-shadow-sm mb-1">💧 ${item.rain}%</p>
+                    <p class="text-[10px] opacity-85 font-normal">Hum: ${item.humidity}%</p>
                 </div>
             `;
         });
         gridContainer.innerHTML = gridHTML;
 
+        // Vẽ biểu đồ (giữ nguyên logic)
         const maxTemp = Math.max(...temps);
         const minTemp = Math.min(...temps);
         const xCoords = [10, 30, 50, 70, 90]; 
@@ -236,3 +256,4 @@
 
     fetchWeather(input.value);
 </script>
+</html>

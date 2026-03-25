@@ -1,21 +1,26 @@
 import os
+import random
 import requests
-from fastapi import FastAPI, HTTPException, Request
+import time
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles # Thêm thư viện load ảnh
 
-# --- THIẾT LẬP ĐƯỜNG DẪN ---
+# ==============================
+# THIẾT LẬP ĐƯỜNG DẪN & ENV
+# ==============================
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '..', '.env'))
-frontend_dir = os.path.join(basedir, '..', 'frontend')
-
-# Khởi tạo FastAPI
+API_KEY = os.getenv("API_KEY") 
+print(f"--- DEBUG: Key hiện tại là: [{API_KEY}] ---")
+# ==============================
+# KHỞI TẠO APP & LOAD ẢNH
+# ==============================
 app = FastAPI(title="Weather API", description="API cho dự án Weather DevOps")
 
-# Cấu hình CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,123 +29,269 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Cấu hình đường dẫn Frontend & Ảnh nền
+frontend_dir = os.path.join(basedir, '..', 'frontend')
 images_dir = os.path.join(frontend_dir, 'images')
 if os.path.exists(images_dir):
     app.mount("/images", StaticFiles(directory=images_dir), name="images")
 
-# --- HÀM LOGIC ---
-def get_dynamic_bg_url(data):
-    condition = data['weather'][0]['main']
-    
-    now = data.get('dt')
-    sunrise = data.get('sys', {}).get('sunrise')
-    sunset = data.get('sys', {}).get('sunset')
-    
-    is_day = True
-    if now and sunrise and sunset:
-        is_day = sunrise <= now <= sunset
+# ==============================
+# ICON MAP
+# ==============================
+ICON_MAP = {
+    "sunny": "☀️",
+    "clear": "☀️",
+    "partly cloudy": "⛅",
+    "cloudy": "☁️",
+    "overcast": "☁️",
+    "mist": "🌫️",
+    "fog": "🌫️",
+    "haze": "🌫️",
+    "light rain": "🌦️",
+    "moderate rain": "🌧️",
+    "heavy rain": "🌧️",
+    "patchy rain": "🌦️",
+    "thunder": "⛈️",
+    "snow": "❄️"
+}
+
+def get_icon(condition):
+    condition = condition.lower()
+    for key in ICON_MAP:
+        if key in condition:
+            return ICON_MAP[key]
+    return "🌤️"
+
+# ==============================
+# BACKGROUND LOGIC
+# ==============================
+def get_dynamic_bg(condition, is_day, rain):
+    condition = condition.lower()
 
     if not is_day:
         return "/images/night.jpg"
-    
-    bg_map = {
-        'Clear': "/images/clear.jpg",
-        'Clouds': "/images/clouds.jpg",
-        'Rain': "/images/rain.jpg",
-        'Drizzle': "/images/drizzle.jpg",
-        'Thunderstorm': "/images/thunder.jpg",
-        'Fog': "/images/fog.jpg",
-        'Mist': "/images/mist.jpg",
-        'Haze': "/images/haze.jpg"
-    }
-    
-    return bg_map.get(condition, "/images/clear.jpg")
 
-def get_tomorrow_advice(t_data):
-    w_ids = [w['id'] for item in t_data for w in item['weather']]
-    temps = [item['main']['temp'] for item in t_data]
-    winds = [item['wind']['speed'] for item in t_data]
-    
-    max_temp = max(temps)
-    min_temp = min(temps)
-    max_wind = max(winds)
+    if "thunder" in condition:
+        return "/images/thunder.jpg"
 
-   
-    if any(200 <= id < 300 for id in w_ids): # Thunderstorm
-        return "Warning: Thunderstorms expected. Stay indoors, avoid open spaces and water.", "text-white-500 font-bold"
-    
-    elif any(id in [502, 503, 504] for id in w_ids): # Heavy Rain 
-        return "Alert: Heavy rain in the forecast. Watch out for localized flooding and drive safely.", "text-white-400 font-bold"
-        
-    elif any(600 <= id < 700 for id in w_ids): # Snow
-        return "Snow is coming! Bundle up in warm layers, wear boots, and be careful of icy roads.", "text-white"
-        
-    elif max_temp >= 36: # Nắng nóng cực đoan
-        return "Extreme heat warning! Stay hydrated, seek shade, and limit strenuous outdoor activities.", "text-white-500 font-bold"
+    if rain > 70:
+        return "/images/rain.jpg"
 
-    elif any(500 <= id <= 501 or id == 511 or 520 <= id <= 531 for id in w_ids): # Light/Moderate Rain
-        return "Rain expected tomorrow. Don't forget your umbrella and a waterproof jacket.", "text-white-400"
-        
-    elif any(300 <= id < 400 for id in w_ids): # Drizzle
-        return "Light drizzle expected. A light rain jacket or water-resistant windbreaker will be handy.", "text-white-300"
-        
-    elif any(700 <= id < 800 for id in w_ids): # Fog, Mist, Haze, Dust
-        return "Visibility may be low due to fog, mist, or haze. Please drive slowly and keep a safe distance.", "text-white-300"
-        
-    elif max_wind >= 10: # Gió mạnh
-        return "It's going to be a windy day. Secure loose items outdoors and wear a windbreaker.", "text-white-300"
+    if rain > 30:
+        return "/images/drizzle.jpg"
 
-    elif max_temp >= 30: # Trời nóng
-        return "Hot and sunny day ahead! Remember to apply sunscreen, wear a hat, and drink plenty of water.", "text-white-400"
-        
-    elif min_temp <= 10: # Trời lạnh
-        return "Chilly weather expected. A heavy coat, scarf, and gloves are recommended if you head out early.", "text-white-300"
-        
-    elif min_temp <= 18: # Trời mát mẻ/hơi lạnh
-        return "Cool weather on the way. A sweater or light jacket will keep you comfortable.", "text-white-200"
-        
-    elif any(id == 800 for id in w_ids): # Trời trong xanh (Clear)
-        return "Perfect weather! Clear skies and pleasant temperatures. A great day to be outdoors.", "text-white-300"
-        
-    else: # Mây mù hoặc các điều kiện bình thường khác
-        return "Cloudy but stable weather expected. A comfortable day for most activities.", "text-white-200"
+    if any(x in condition for x in ["fog", "mist", "haze"]):
+        return random.choice([
+            "/images/fog.jpg",
+            "/images/mist.jpg",
+            "/images/haze.jpg"
+        ])
 
+    if "cloud" in condition:
+        return "/images/clouds.jpg"
 
+    if "clear" in condition or "sunny" in condition:
+        return random.choice([
+            "/images/clear.jpg",
+            "/images/clear2.jpg"
+        ])
+
+    return "/images/clear.jpg"
+
+# ==============================
+# FEELS LIKE ADVICE
+# ==============================
+def get_feels_like_advice(temp, humidity):
+    if temp >= 30 and humidity >= 70:
+        return "High humidity makes it feel hotter than actual temperature."
+    if humidity >= 85:
+        return "Very humid weather. You may feel uncomfortable."
+    if humidity <= 40:
+        return "Dry air. Stay hydrated."
+    return ""
+
+# ==============================
+# SMART WEATHER ADVICE
+# ==============================
+def get_advice(forecast):
+    conditions = [f["condition"].lower() for f in forecast]
+    max_temp = max([f['temp'] for f in forecast])
+    min_temp = min([f['temp'] for f in forecast])
+    max_rain = max([f['rain'] for f in forecast])
+    max_wind = max([f['wind'] for f in forecast])
+
+    if any("thunder" in c for c in conditions):
+        return "Thunderstorms expected. Stay indoors.", "text-white-300 font-bold"
+
+    if any("snow" in c for c in conditions):
+        return "Snow expected. Keep warm and be careful.", "text-white-200"
+
+    if max_rain > 80:
+        return "Heavy rain expected. Risk of flooding.", "text-white-300 font-bold"
+
+    if max_rain > 50:
+        return "Moderate rain expected. Bring umbrella.", "text-white-300"
+
+    if max_rain > 20:
+        return "Light rain possible.", "text-blue-200"
+
+    if any(x in c for c in conditions for x in ["fog", "mist", "haze"]):
+        return "Low visibility due to fog or haze.", "text-white-300"
+
+    if max_wind > 12:
+        return "Strong winds expected.", "text-white-200"
+
+    if max_temp >= 36:
+        return "Extreme heat. Stay hydrated.", "text-white-300 font-bold"
+
+    if max_temp >= 30:
+        return "Hot weather. Wear sunscreen.", "text-white-300"
+
+    if min_temp <= 10:
+        return "Cold weather. Wear warm clothes.", "text-white-200"
+
+    if min_temp <= 18:
+        return "Cool weather. Light jacket recommended.", "text-white-200"
+
+    if all("sunny" in c or "clear" in c for c in conditions):
+        return "Perfect weather for outdoor activities!", "text-white-200"
+
+    if any("cloud" in c for c in conditions):
+        return "Cloudy but stable weather.", "text-white-200"
+
+    return "Weather looks normal.", "text-white"
+
+# ==============================
+# ROUTE TRANG CHỦ (FRONTEND)
+# ==============================
 @app.get("/")
 async def read_index():
+    # Route này chịu trách nhiệm hiển thị file HTML khi bạn vào http://localhost:8080/
     return FileResponse(os.path.join(frontend_dir, 'index.html'))
 
+# ==============================
+# ROUTE LẤY DỮ LIỆU (API)
+# ==============================
 @app.get("/api/weather")
 def get_weather(city: str):
-    api_key = os.getenv('API_KEY')
-    if not city or not api_key: 
-        raise HTTPException(status_code=400, detail="Missing info or API Key")
+    # Route này chịu trách nhiệm cấp dữ liệu JSON
+    if not city:
+        raise HTTPException(status_code=400, detail="City required")
+    
+    if not API_KEY:
+        raise HTTPException(status_code=500, detail="API Key not found in environment variables")
+
+    url = f"https://api.weatherapi.com/v1/forecast.json?key={API_KEY}&q={city}&days=2&aqi=yes&alerts=yes"
 
     try:
-        res = requests.get(f"https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={api_key}")
+        res = requests.get(url)
         data = res.json()
-        if res.status_code != 200: 
-            raise HTTPException(status_code=res.status_code, detail=data)
 
-        data['backgroundImage'] = get_dynamic_bg_url(data)
+        if res.status_code != 200:
+            raise HTTPException(status_code=400, detail=data)
 
-        f_res = requests.get(f"https://api.openweathermap.org/data/2.5/forecast?q={city}&units=metric&appid={api_key}")
-        if f_res.status_code == 200:
-            f_data = f_res.json().get('list', [])
-            
-            data['forecast'] = [{"time": i['dt_txt'].split(" ")[1][:5], "temp": round(i['main']['temp'], 1), "humidity": i['main']['humidity']} for i in f_data[:5]]
+        current = data["current"]
+        location = data["location"]
+        condition_text = current["condition"]["text"]
 
-            tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-            t_data = [i for i in f_data if i['dt_txt'].startswith(tomorrow)] or f_data[8:16]
-            
-            summary, color = get_tomorrow_advice(t_data)
-            data['summary'] = summary
-            data['summary_color'] = color
+        current_epoch = current["last_updated_epoch"]
+        
+        all_hours = data["forecast"]["forecastday"][0]["hour"] + data["forecast"]["forecastday"][1]["hour"]
+        future_hours = [h for h in all_hours if h["time_epoch"] > current_epoch]
 
-        return data
+        forecast = []
+        for h in future_hours[:5]:
+            forecast.append({
+                "time": h["time"].split(" ")[1],
+                "temp": round(h["temp_c"], 1),
+                "humidity": h["humidity"],
+                "rain": h["chance_of_rain"],
+                "wind": h["wind_kph"] / 3.6,
+                "condition": h["condition"]["text"]
+            })
+
+        # ===== Tính toán Timezone Offset chuẩn cho Frontend =====
+        local_time_str = location["localtime"] # VD: "2026-03-25 11:26"
+        local_time_dt = datetime.strptime(local_time_str, "%Y-%m-%d %H:%M")
+        utc_time_dt = datetime.utcnow()
+        
+        # Tính khoảng cách chênh lệch (giây) và làm tròn theo bloc 30 phút (1800s) để tránh sai số
+        offset_seconds = int((local_time_dt - utc_time_dt).total_seconds())
+        timezone_offset_seconds = round(offset_seconds / 1800) * 1800
+
+        response = {
+            "name": location["name"],
+            "sys": {"country": location["country"]},
+            "timezone": timezone_offset_seconds,
+            "main": {
+                "temp": current["temp_c"],
+                "feels_like": current["feelslike_c"],
+                "humidity": current["humidity"],
+                "pressure": current["pressure_mb"]
+            },
+            "weather": [{
+                "main": condition_text,
+                "description": condition_text
+            }],
+            "clouds": {"all": current["cloud"]},
+            "wind": {"speed": current["wind_kph"] / 3.6},
+            "visibility": current["vis_km"] * 1000,
+        }
+
+        response["icon"] = get_icon(condition_text)
+
+        response["backgroundImage"] = get_dynamic_bg(
+            condition_text,
+            current["is_day"],
+            forecast[0]["rain"] if forecast else 0
+        )
+
+        response["forecast"] = forecast
+
+        summary, color = get_advice(forecast)
+        response["summary"] = summary
+        response["summary_color"] = color
+
+        response["feels_advice"] = get_feels_like_advice(
+            current["temp_c"],
+            current["humidity"]
+        )
+
+        # ===== XỬ LÝ CHỈ SỐ KHÔNG KHÍ (AQI) =====
+        air_quality = current.get("air_quality", {})
+        epa_index = air_quality.get("us-epa-index", 1) # Chuẩn US EPA (1 đến 6)
+        pm25 = round(air_quality.get("pm2_5", 0), 1)
+        
+        aqi_status = "Good"
+        aqi_color = "text-green-400"
+        
+        if epa_index == 2:
+            aqi_status = "Moderate"
+            aqi_color = "text-yellow-400"
+        elif epa_index == 3:
+            aqi_status = "Unhealthy (Sensitive)"
+            aqi_color = "text-orange-400"
+        elif epa_index == 4:
+            aqi_status = "Unhealthy"
+            aqi_color = "text-red-400"
+        elif epa_index == 5:
+            aqi_status = "Very Unhealthy"
+            aqi_color = "text-purple-400"
+        elif epa_index == 6:
+            aqi_status = "Hazardous"
+            aqi_color = "text-rose-500 font-bold"
+
+        response["aqi"] = {
+            "status": aqi_status,
+            "color": aqi_color,
+            "pm25": pm25
+        }
+        
+        return response
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="127.0.0.1", port=5000, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=80, reload=True)
