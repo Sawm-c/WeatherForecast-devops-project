@@ -1,0 +1,51 @@
+name: Weather App CI/CD
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: install python (for testing env)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: install dependencies
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+          pip install flake8
+
+      - name: check function by flake8
+        run: flake8 ./backend/app.py
+  
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+      
+      - name: login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{secrets.DOCKERHUB_USERNAME}}
+          password: ${{secrets.DOCKERHUB_PASSWORD}}
+
+      - name: build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+           ${{secrets.DOCKERHUB_USERNAME}}/weather-app:latest
+           ${{secrets.DOCKERHUB_USERNAME}}/weather-app:${{github.ref_name}}
