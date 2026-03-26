@@ -125,13 +125,15 @@ def get_advice(forecast):
     max_wind = max([f['wind'] for f in forecast])
 
     if any("thunder" in c for c in conditions):
-        return "Thunderstorms expected. Stay indoors.", "text-white-300 font-bold"
+        return "Thunderstorms expected. Stay indoors.", 
+    "text-white-300 font-bold"
 
     if any("snow" in c for c in conditions):
         return "Snow expected. Keep warm and be careful.", "text-white-200"
 
     if max_rain > 80:
-        return "Heavy rain expected. Risk of flooding.", "text-white-300 font-bold"
+        return "Heavy rain expected. Risk of flooding.", 
+    "text-white-300 font-bold"
 
     if max_rain > 50:
         return "Moderate rain expected. Bring umbrella.", "text-white-300"
