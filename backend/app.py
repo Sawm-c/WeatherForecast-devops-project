@@ -1,21 +1,21 @@
 import os
 import random
 import requests
-import time
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from datetime import datetime
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles # Thêm thư viện load ảnh
+from fastapi.staticfiles import StaticFiles
 
 # ==============================
 # THIẾT LẬP ĐƯỜNG DẪN & ENV
 # ==============================
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '..', '.env'))
-API_KEY = os.getenv("API_KEY") 
+API_KEY = os.getenv("API_KEY")
 print(f"--- DEBUG: Key hiện tại là: [{API_KEY}] ---")
+
 # ==============================
 # KHỞI TẠO APP & LOAD ẢNH
 # ==============================
@@ -55,12 +55,14 @@ ICON_MAP = {
     "snow": "❄️"
 }
 
+
 def get_icon(condition):
     condition = condition.lower()
     for key in ICON_MAP:
         if key in condition:
             return ICON_MAP[key]
     return "🌤️"
+
 
 # ==============================
 # BACKGROUND LOGIC
@@ -98,6 +100,7 @@ def get_dynamic_bg(condition, is_day, rain):
 
     return "/images/clear.jpg"
 
+
 # ==============================
 # FEELS LIKE ADVICE
 # ==============================
@@ -109,6 +112,7 @@ def get_feels_like_advice(temp, humidity):
     if humidity <= 40:
         return "Dry air. Stay hydrated."
     return ""
+
 
 # ==============================
 # SMART WEATHER ADVICE
@@ -161,27 +165,35 @@ def get_advice(forecast):
 
     return "Weather looks normal.", "text-white"
 
+
 # ==============================
 # ROUTE TRANG CHỦ (FRONTEND)
 # ==============================
 @app.get("/")
 async def read_index():
-    # Route này chịu trách nhiệm hiển thị file HTML khi bạn vào http://localhost:8080/
+    # Hiển thị file HTML khi vào http://localhost:8080/
     return FileResponse(os.path.join(frontend_dir, 'index.html'))
+
 
 # ==============================
 # ROUTE LẤY DỮ LIỆU (API)
 # ==============================
 @app.get("/api/weather")
 def get_weather(city: str):
-    # Route này chịu trách nhiệm cấp dữ liệu JSON
+    # Cấp dữ liệu JSON
     if not city:
         raise HTTPException(status_code=400, detail="City required")
-    
-    if not API_KEY:
-        raise HTTPException(status_code=500, detail="API Key not found in environment variables")
 
-    url = f"https://api.weatherapi.com/v1/forecast.json?key={API_KEY}&q={city}&days=2&aqi=yes&alerts=yes"
+    if not API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="API Key not found in environment variables"
+        )
+
+    url = (
+        f"https://api.weatherapi.com/v1/forecast.json"
+        f"?key={API_KEY}&q={city}&days=2&aqi=yes&alerts=yes"
+    )
 
     try:
         res = requests.get(url)
@@ -195,9 +207,12 @@ def get_weather(city: str):
         condition_text = current["condition"]["text"]
 
         current_epoch = current["last_updated_epoch"]
-        
-        all_hours = data["forecast"]["forecastday"][0]["hour"] + data["forecast"]["forecastday"][1]["hour"]
-        future_hours = [h for h in all_hours if h["time_epoch"] > current_epoch]
+
+        fc_day = data["forecast"]["forecastday"]
+        all_hours = fc_day[0]["hour"] + fc_day[1]["hour"]
+        future_hours = [
+            h for h in all_hours if h["time_epoch"] > current_epoch
+        ]
 
         forecast = []
         for h in future_hours[:5]:
@@ -210,12 +225,11 @@ def get_weather(city: str):
                 "condition": h["condition"]["text"]
             })
 
-        # ===== Tính toán Timezone Offset chuẩn cho Frontend =====
-        local_time_str = location["localtime"] # VD: "2026-03-25 11:26"
+        # Tính toán Timezone Offset chuẩn cho Frontend
+        local_time_str = location["localtime"]
         local_time_dt = datetime.strptime(local_time_str, "%Y-%m-%d %H:%M")
         utc_time_dt = datetime.utcnow()
-        
-        # Tính khoảng cách chênh lệch (giây) và làm tròn theo bloc 30 phút (1800s) để tránh sai số
+
         offset_seconds = int((local_time_dt - utc_time_dt).total_seconds())
         timezone_offset_seconds = round(offset_seconds / 1800) * 1800
 
@@ -239,19 +253,15 @@ def get_weather(city: str):
         }
 
         response["icon"] = get_icon(condition_text)
-
         response["backgroundImage"] = get_dynamic_bg(
             condition_text,
             current["is_day"],
             forecast[0]["rain"] if forecast else 0
         )
-
         response["forecast"] = forecast
-
         summary, color = get_advice(forecast)
         response["summary"] = summary
         response["summary_color"] = color
-
         response["feels_advice"] = get_feels_like_advice(
             current["temp_c"],
             current["humidity"]
@@ -259,12 +269,12 @@ def get_weather(city: str):
 
         # ===== XỬ LÝ CHỈ SỐ KHÔNG KHÍ (AQI) =====
         air_quality = current.get("air_quality", {})
-        epa_index = air_quality.get("us-epa-index", 1) # Chuẩn US EPA (1 đến 6)
+        epa_index = air_quality.get("us-epa-index", 1)
         pm25 = round(air_quality.get("pm2_5", 0), 1)
-        
+
         aqi_status = "Good"
         aqi_color = "text-green-400"
-        
+
         if epa_index == 2:
             aqi_status = "Moderate"
             aqi_color = "text-yellow-400"
@@ -286,11 +296,12 @@ def get_weather(city: str):
             "color": aqi_color,
             "pm25": pm25
         }
-        
+
         return response
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn
