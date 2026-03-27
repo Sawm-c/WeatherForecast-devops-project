@@ -45,26 +45,25 @@ A modern, containerized weather forecast web application built with FastAPI and 
    git clone https://github.com/Sawm-c/WeatherForecast-devops-project.git
    cd WeatherForecast-devops-project
 
-Configure Environment Variables
+2. Configure Environment Variables
 Create a .env file in the root directory and add your credentials:env# Database Configuration
-DB_USER=postgres
-DB_PASSW=your_secure_password
-DB_NAME=weather_db
+   DB_USER=postgres
+   DB_PASSW=your_secure_password
+   DB_NAME=weather_db
+   # Weather API
+   API_KEY=your_weatherapi_key_here
+3. Start the application using Docker ComposeBashdocker-compose up -d --build
+   Open your browser
+   Navigate to http://localhost:8080 to see the weather app in action.
 
-# Weather API
-API_KEY=your_weatherapi_key_here
-Start the application using Docker ComposeBashdocker-compose up -d --build
-Open your browser
-Navigate to http://localhost:8080 to see the weather app in action.
+4. Local Development (Without Docker)
+   If you prefer to run the app directly using Python:
+   Bash# Install dependencies
+   pip install -r backend/requirements.txt
+   # Run the FastAPI server
+   python backend/app.py
+   Note: Ensure your .env file is properly set up before running locally.
 
-Local Development (Without Docker)
-If you prefer to run the app directly using Python:
-Bash# Install dependencies
-pip install -r backend/requirements.txt
-
-# Run the FastAPI server
-python backend/app.py
-Note: Ensure your .env file is properly set up before running locally.
 📁 Project Structure
 plaintext.
 ├── .github/workflows/   # GitHub Actions CI/CD configurations
@@ -81,36 +80,37 @@ plaintext.
 ├── Dockerfile           # Blueprint for the application image
 ├── .gitignore           # Ignored files and directories
 └── README.md            # Project documentation
+
 🔄 CI/CD Pipeline Architecture
 This project implements a robust CI/CD pipeline using GitHub Actions. Every time code is pushed to the main branch, the following automated jobs are triggered:
 
-Test-Code Job:
-Sets up an Ubuntu runner with Python 3.11.
-Installs dependencies.
-Runs flake8 to enforce PEP 8 coding standards and catch syntax errors.
+1. Test-Code Job:
+   - Sets up an Ubuntu runner with Python 3.11.
+   - Installs dependencies.
+   - Runs flake8 to enforce PEP 8 coding standards and catch syntax errors.
 
-Build-and-Push Job:
-Waits for the Test-Code job to pass successfully.
-Securely logs into Docker Hub using GitHub Secrets.
-Builds the Docker image and tags it with both latest and the dynamic Git commit SHA/tag.
-Pushes the image to the Docker Hub registry.
+2. Build-and-Push Job:
+   - Waits for the Test-Code job to pass successfully.
+   - Securely logs into Docker Hub using GitHub Secrets.
+   - Builds the Docker image and tags it with both latest and the dynamic Git commit SHA/tag.
+   - Pushes the image to the Docker Hub registry.
 
 
 🤝 Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-Fork the repository
-Create your feature branch (git checkout -b feature/AmazingFeature)
-Commit your changes (git commit -m 'Add some AmazingFeature')
-Push to the branch (git push origin feature/AmazingFeature)
-Open a Pull Request
+1. Fork the repository
+2. Create your feature branch (git checkout -b feature/AmazingFeature)
+3. Commit your changes (git commit -m 'Add some AmazingFeature')
+4. Push to the branch (git push origin feature/AmazingFeature)
+5. Open a Pull Request
 
 🙏 Acknowledgments
-
-WeatherAPI: For providing accurate and comprehensive weather data.
-Unsplash: For the beautiful weather background imagery.
-Tailwind CSS: For making UI styling incredibly fast and efficient.
+1. WeatherAPI: For providing accurate and comprehensive weather data.
+2 .Unsplash: For the beautiful weather background imagery.
+3. Tailwind CSS: For making UI styling incredibly fast and efficient.
 
 📞 Contact
 Sawm-c - 💻 GitHub: @Sawm-c
+📧 Email: hieuhc53@gmail.com
 ⭐ Star this repository if you found it helpful or interesting!
