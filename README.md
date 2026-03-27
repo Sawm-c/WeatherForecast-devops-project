@@ -1,4 +1,3 @@
-
 # 🌤️ Smart Weather Forecast & CI/CD Pipeline
 
 A modern, containerized weather forecast web application built with FastAPI and Vanilla JavaScript. This project provides real-time weather tracking with a dynamic UI and showcases a complete DevOps lifecycle with automated CI/CD pipelines and Docker containerization.
@@ -41,31 +40,38 @@ A modern, containerized weather forecast web application built with FastAPI and 
 
 ### Installation
 1. **Clone the repository**
-   ```bash
    git clone https://github.com/Sawm-c/WeatherForecast-devops-project.git
    cd WeatherForecast-devops-project
 
-2. Configure Environment Variables
-Create a .env file in the root directory and add your credentials:env# Database Configuration
+2. **Configure Environment Variables**
+   Create a .env file in the root directory and add your credentials:
+   
+   # Database Configuration
    DB_USER=postgres
    DB_PASSW=your_secure_password
    DB_NAME=weather_db
+   
    # Weather API
    API_KEY=your_weatherapi_key_here
-3. Start the application using Docker ComposeBashdocker-compose up -d --build
-   Open your browser
-   Navigate to http://localhost:8080 to see the weather app in action.
 
-4. Local Development (Without Docker)
+3. **Start the application using Docker Compose**
+   docker-compose up -d --build
+   
+   Open your browser and navigate to http://localhost:8080 to see the weather app in action.
+
+4. **Local Development (Without Docker)**
    If you prefer to run the app directly using Python:
-   Bash# Install dependencies
+   
+   # Install dependencies
    pip install -r backend/requirements.txt
+   
    # Run the FastAPI server
    python backend/app.py
-   Note: Ensure your .env file is properly set up before running locally.
+   
+   *Note: Ensure your .env file is properly set up before running locally.*
 
-📁 Project Structure
-plaintext.
+## 📁 Project Structure
+.
 ├── .github/workflows/   # GitHub Actions CI/CD configurations
 │   └── main.yml         # Pipeline for testing and pushing Docker images
 ├── backend/             # Backend application code
@@ -81,22 +87,21 @@ plaintext.
 ├── .gitignore           # Ignored files and directories
 └── README.md            # Project documentation
 
-🔄 CI/CD Pipeline Architecture
+## 🔄 CI/CD Pipeline Architecture
 This project implements a robust CI/CD pipeline using GitHub Actions. Every time code is pushed to the main branch, the following automated jobs are triggered:
 
-1. Test-Code Job:
+1. **Test-Code Job:**
    - Sets up an Ubuntu runner with Python 3.11.
    - Installs dependencies.
    - Runs flake8 to enforce PEP 8 coding standards and catch syntax errors.
 
-2. Build-and-Push Job:
+2. **Build-and-Push Job:**
    - Waits for the Test-Code job to pass successfully.
    - Securely logs into Docker Hub using GitHub Secrets.
    - Builds the Docker image and tags it with both latest and the dynamic Git commit SHA/tag.
    - Pushes the image to the Docker Hub registry.
 
-
-🤝 Contributing
+## 🤝 Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
@@ -105,12 +110,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (git push origin feature/AmazingFeature)
 5. Open a Pull Request
 
-🙏 Acknowledgments
-1. WeatherAPI: For providing accurate and comprehensive weather data.
-2 .Unsplash: For the beautiful weather background imagery.
-3. Tailwind CSS: For making UI styling incredibly fast and efficient.
+## 🙏 Acknowledgments
+- **WeatherAPI**: For providing accurate and comprehensive weather data.
+- **Unsplash**: For the beautiful weather background imagery.
+- **Tailwind CSS**: For making UI styling incredibly fast and efficient.
 
-📞 Contact
-Sawm-c - 💻 GitHub: @Sawm-c
+## 📞 Contact
+Sawm-c - 💻 GitHub: @Sawm-c (https://github.com/Sawm-c)
 📧 Email: hieuhc53@gmail.com
+
 ⭐ Star this repository if you found it helpful or interesting!
