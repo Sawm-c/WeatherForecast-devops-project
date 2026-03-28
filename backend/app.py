@@ -1,25 +1,40 @@
 import os
+import json
 import random
 import requests
+import psycopg2
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-# ==============================
-# THIẾT LẬP ĐƯỜNG DẪN & ENV
-# ==============================
+# Setup paths and env variables
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '..', '.env'))
 API_KEY = os.getenv("API_KEY")
-print(f"--- DEBUG: Key hiện tại là: [{API_KEY}] ---")
 
-# ==============================
-# KHỞI TẠO APP & LOAD ẢNH
-# ==============================
-app = FastAPI(title="Weather API", description="API cho dự án Weather DevOps")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSW = os.getenv("DB_PASSW", "postgres")
+DB_NAME = os.getenv("DB_NAME", "weather_db")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    f"postgresql://{DB_USER}:{DB_PASSW}@{DB_HOST}:5432/{DB_NAME}"
+)
+
+
+def get_db_connection():
+    try:
+        return psycopg2.connect(DATABASE_URL)
+    except Exception as e:
+        print(f"--- DB Error: {e} ---")
+        return None
+
+
+# Initialize FastAPI app and static files
+app = FastAPI(title="Weather API", description="API for Weather DevOps")
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,30 +44,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Cấu hình đường dẫn Frontend & Ảnh nền
 frontend_dir = os.path.join(basedir, '..', 'frontend')
 images_dir = os.path.join(frontend_dir, 'images')
 if os.path.exists(images_dir):
     app.mount("/images", StaticFiles(directory=images_dir), name="images")
 
-# ==============================
-# ICON MAP
-# ==============================
+# Weather icon mapping
 ICON_MAP = {
-    "sunny": "☀️",
-    "clear": "☀️",
-    "partly cloudy": "⛅",
-    "cloudy": "☁️",
-    "overcast": "☁️",
-    "mist": "🌫️",
-    "fog": "🌫️",
-    "haze": "🌫️",
-    "light rain": "🌦️",
-    "moderate rain": "🌧️",
-    "heavy rain": "🌧️",
-    "patchy rain": "🌦️",
-    "thunder": "⛈️",
-    "snow": "❄️"
+    "sunny": "☀️", "clear": "☀️", "partly cloudy": "⛅",
+    "cloudy": "☁️", "overcast": "☁️", "mist": "🌫️",
+    "fog": "🌫️", "haze": "🌫️", "light rain": "🌦️",
+    "moderate rain": "🌧️", "heavy rain": "🌧️",
+    "patchy rain": "🌦️", "thunder": "⛈️", "snow": "❄️"
 }
 
 
@@ -64,46 +67,31 @@ def get_icon(condition):
     return "🌤️"
 
 
-# ==============================
-# BACKGROUND LOGIC
-# ==============================
+# Dynamic background selection
 def get_dynamic_bg(condition, is_day, rain):
     condition = condition.lower()
 
     if not is_day:
         return "/images/night.jpg"
-
     if "thunder" in condition:
         return "/images/thunder.jpg"
-
     if rain > 70:
         return "/images/rain.jpg"
-
     if rain > 30:
         return "/images/drizzle.jpg"
-
     if any(x in condition for x in ["fog", "mist", "haze"]):
         return random.choice([
-            "/images/fog.jpg",
-            "/images/mist.jpg",
-            "/images/haze.jpg"
+            "/images/fog.jpg", "/images/mist.jpg", "/images/haze.jpg"
         ])
-
     if "cloud" in condition:
         return "/images/clouds.jpg"
-
     if "clear" in condition or "sunny" in condition:
-        return random.choice([
-            "/images/clear.jpg",
-            "/images/clear2.jpg"
-        ])
+        return random.choice(["/images/clear.jpg", "/images/clear2.jpg"])
 
     return "/images/clear.jpg"
 
 
-# ==============================
-# FEELS LIKE ADVICE
-# ==============================
+# Feels-like temperature advice
 def get_feels_like_advice(temp, humidity):
     if temp >= 30 and humidity >= 70:
         return "High humidity makes it feel hotter than actual temperature."
@@ -114,9 +102,7 @@ def get_feels_like_advice(temp, humidity):
     return ""
 
 
-# ==============================
-# SMART WEATHER ADVICE
-# ==============================
+# Smart weather summary and advice
 def get_advice(forecast):
     conditions = [f["condition"].lower() for f in forecast]
     max_temp = max([f['temp'] for f in forecast])
@@ -125,67 +111,78 @@ def get_advice(forecast):
     max_wind = max([f['wind'] for f in forecast])
 
     if any("thunder" in c for c in conditions):
-        return "Thunderstorms expected. Stay indoors.",
-    "text-white-300 font-bold"
-
+        return "Thunderstorms expected. Stay indoors.",\
+               "text-white-300 font-bold"
     if any("snow" in c for c in conditions):
-        return "Snow expected. Keep warm and be careful.", "text-white-200"
-
+        return "Snow expected. Keep warm and be careful.","text-white-200"
     if max_rain > 80:
-        return "Heavy rain expected. Risk of flooding.",
-    "text-white-300 font-bold"
-
+        return "Heavy rain expected. Risk of flooding.",\
+               "text-white-300 font-bold"
     if max_rain > 50:
-        return "Moderate rain expected. Bring umbrella.", "text-white-300"
-
+        return "Moderate rain expected. Bring umbrella.","text-white-300"
     if max_rain > 20:
         return "Light rain possible.", "text-blue-200"
-
     if any(x in c for c in conditions for x in ["fog", "mist", "haze"]):
         return "Low visibility due to fog or haze.", "text-white-300"
-
     if max_wind > 12:
         return "Strong winds expected.", "text-white-200"
-
     if max_temp >= 36:
         return "Extreme heat. Stay hydrated.", "text-white-300 font-bold"
-
     if max_temp >= 30:
         return "Hot weather. Wear sunscreen.", "text-white-300"
-
     if min_temp <= 10:
         return "Cold weather. Wear warm clothes.", "text-white-200"
-
     if min_temp <= 18:
         return "Cool weather. Light jacket recommended.", "text-white-200"
-
     if all("sunny" in c or "clear" in c for c in conditions):
         return "Perfect weather for outdoor activities!", "text-white-200"
-
     if any("cloud" in c for c in conditions):
         return "Cloudy but stable weather.", "text-white-200"
 
     return "Weather looks normal.", "text-white"
 
 
-# ==============================
-# ROUTE TRANG CHỦ (FRONTEND)
-# ==============================
+# Frontend route
 @app.get("/")
 async def read_index():
-    # Hiển thị file HTML khi vào http://localhost:8080/
     return FileResponse(os.path.join(frontend_dir, 'index.html'))
 
 
-# ==============================
-# ROUTE LẤY DỮ LIỆU (API)
-# ==============================
+# Weather API route
 @app.get("/api/weather")
 def get_weather(city: str):
-    # Cấp dữ liệu JSON
     if not city:
         raise HTTPException(status_code=400, detail="City required")
 
+    # Normalize city name
+    city_normalized = city.lower().strip()
+
+    # 1. Check database cache
+    conn = get_db_connection()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT weather_data, updated_at "
+                    "FROM weather_data WHERE city_name = %s",
+                    (city_normalized,)
+                )
+                record = cur.fetchone()
+                if record:
+                    weather_data, updated_at = record
+                    time_diff = datetime.now() - updated_at
+                    # Return cache if updated within 30 minutes
+                    if time_diff < timedelta(minutes=30):
+                        print(f"--- CACHE HIT: {city_normalized} ---")
+                        if isinstance(weather_data, str):
+                            return json.loads(weather_data)
+                        return weather_data
+        except Exception as e:
+            print(f"Cache Read Error: {e}")
+        finally:
+            conn.close()
+
+    # 2. Fetch from WeatherAPI if no cache or expired
     if not API_KEY:
         raise HTTPException(
             status_code=500,
@@ -194,7 +191,7 @@ def get_weather(city: str):
 
     url = (
         f"https://api.weatherapi.com/v1/forecast.json"
-        f"?key={API_KEY}&q={city}&days=2&aqi=yes&alerts=yes"
+        f"?key={API_KEY}&q={city_normalized}&days=2&aqi=yes&alerts=yes"
     )
 
     try:
@@ -207,7 +204,6 @@ def get_weather(city: str):
         current = data["current"]
         location = data["location"]
         condition_text = current["condition"]["text"]
-
         current_epoch = current["last_updated_epoch"]
 
         fc_day = data["forecast"]["forecastday"]
@@ -227,7 +223,6 @@ def get_weather(city: str):
                 "condition": h["condition"]["text"]
             })
 
-        # Tính toán Timezone Offset chuẩn cho Frontend
         local_time_str = location["localtime"]
         local_time_dt = datetime.strptime(local_time_str, "%Y-%m-%d %H:%M")
         utc_time_dt = datetime.utcnow()
@@ -269,7 +264,6 @@ def get_weather(city: str):
             current["humidity"]
         )
 
-        # ===== XỬ LÝ CHỈ SỐ KHÔNG KHÍ (AQI) =====
         air_quality = current.get("air_quality", {})
         epa_index = air_quality.get("us-epa-index", 1)
         pm25 = round(air_quality.get("pm2_5", 0), 1)
@@ -298,6 +292,31 @@ def get_weather(city: str):
             "color": aqi_color,
             "pm25": pm25
         }
+
+        # 3. Upsert new data to cache
+        conn = get_db_connection()
+        if conn:
+            try:
+                with conn.cursor() as cur:
+                    upsert_sql = """
+                        INSERT INTO weather_data
+                        (city_name, weather_data, updated_at)
+                        VALUES (%s, %s, CURRENT_TIMESTAMP)
+                        ON CONFLICT (city_name)
+                        DO UPDATE SET
+                            weather_data = EXCLUDED.weather_data,
+                            updated_at = CURRENT_TIMESTAMP;
+                    """
+                    cur.execute(
+                        upsert_sql,
+                        (city_normalized, json.dumps(response))
+                    )
+                    conn.commit()
+                    print(f"--- CACHE UPSERTED: {city_normalized} ---")
+            except Exception as e:
+                print(f"Cache Write Error: {e}")
+            finally:
+                conn.close()
 
         return response
 
