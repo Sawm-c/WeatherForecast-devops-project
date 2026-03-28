@@ -44,6 +44,7 @@ A modern, containerized weather forecast web application built with FastAPI and 
    cd WeatherForecast-devops-project
 
 2. **Configure Environment Variables**
+   ```Markdown
    Create a .env file in the root directory and add your credentials:
    
    # Database Configuration
@@ -53,24 +54,26 @@ A modern, containerized weather forecast web application built with FastAPI and 
    
    # Weather API
    API_KEY=your_weatherapi_key_here
-
+   ```
 3. **Start the application using Docker Compose**
+   ```bash
    docker-compose up -d --build
-   
-   Open your browser and navigate to http://localhost:8080 to see the weather app in action.
 
+   Open your browser and navigate to `http://localhost:8080` to see the weather app in action.
+   ```
 4. **Local Development (Without Docker)**
    If you prefer to run the app directly using Python:
-   
+   ```bash
    # Install dependencies
    pip install -r backend/requirements.txt
    
    # Run the FastAPI server
    python backend/app.py
-   
+   ```
    *Note: Ensure your .env file is properly set up before running locally.*
 
 ## 📁 Project Structure
+```
 .
 ├── .github/workflows/   # GitHub Actions CI/CD configurations
 │   └── main.yml         # Pipeline for testing and pushing Docker images
@@ -86,6 +89,7 @@ A modern, containerized weather forecast web application built with FastAPI and 
 ├── Dockerfile           # Blueprint for the application image
 ├── .gitignore           # Ignored files and directories
 └── README.md            # Project documentation
+```
 
 ## 🔄 CI/CD Pipeline Architecture
 This project implements a robust CI/CD pipeline using GitHub Actions. Every time code is pushed to the main branch, the following automated jobs are triggered:
