@@ -19,7 +19,7 @@ resource "aws_instance" "app-ec2" {
 	user_data = <<-EOF
 	#!/bin/bash
 		sudo yum update -y
-		sudo install git docker -y
+		sudo yum install git docker -y
 
 		sudo systemctl start docker
 		sudo systemctl enable docker
