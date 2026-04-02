@@ -65,10 +65,10 @@ jobs:
             cd WeatherForecast-devops-project
             git pull origin main
 
-            echo "DB_USER=${{secrets.DB_USER}}" > .env
-            echo "DB_PASSW=${{secrets.DB_PASSW}}" >> .env
-            echo "DB_NAME=${{secrets.DB_NAME}}" >> .env
-            echo "API_KEY=${{secrets.API_KEY}}" >>.env
+            echo "DB_USER=${{ secrets.DB_USER }}" > .env
+            echo "DB_PASSW=${{ secrets.DB_PASSW }}" >> .env
+            echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+            echo "API_KEY=${{ secrets.API_KEY }}" >>.env
 
             docker-compose pull app
             docker-compose up -d
