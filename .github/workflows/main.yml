@@ -49,3 +49,28 @@ jobs:
           tags: |
            ${{secrets.DOCKERHUB_USERNAME}}/weather-app:latest
            ${{secrets.DOCKERHUB_USERNAME}}/weather-app:${{github.ref_name}}
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy to sv EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{secrets.SV_IP}}
+          username: ${{secrets.SV_USER}}
+          key: ${{secrets.WF_PRV_KEY}}
+          script: |
+            if [ ! -d "WeatherForecast-devops-project"]; then git clone https://github.com/Sawm-c/WeatherForecast-devops-project.git fi
+
+            cd WeatherForecast-devops-project
+            git pull origin main
+
+            echo "DB_USER=${{secrets.DB_USER}}" > .env
+            echo "DB_PASSW=${{secrets.DB_PASSW}}" >> .env
+            echo "DB_NAME=${{secrets.DB_NAME}}" >> .env
+            echo "API_KEY=${{secrets.API_KEY}}" >>.env
+
+            docker-compose pull app
+            docker-compose up -d
+
+  
