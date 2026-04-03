@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS weather_data (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_city_name_lower ON weather_data (LOWER(city_name));
+CREATE  INDEX idx_city_name_unique ON weather_data (LOWER(city_name));
