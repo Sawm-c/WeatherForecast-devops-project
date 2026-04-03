@@ -7,11 +7,11 @@ resource "aws_key_pair" "weatherforecast_key" {
 	public_key = file(var.weather_key)
 }
 
-resource "aws_instance" "app-ec2" {
+resource "aws_instance" "weather_app" {
 	ami = var.aws_instance
 	instance_type = var.instance_type
 	key_name = aws_key_pair.weatherforecast_key.key_name
-	vpc_security_group_ids = [aws_security_group.app-sg.id]
+	vpc_security_group_ids = [aws_security_group.weather-sg.id]
 	tags = {
 		Name = "WeatherForecast-ec2"
 		Environment = "Production"
@@ -26,9 +26,17 @@ resource "aws_instance" "app-ec2" {
 
 		usermod -aG docker ec2-user
 
-		curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+		curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 		chmod +x /usr/local/bin/docker-compose
 		EOF
+}
+
+resource "aws_eip" "app-eip" {
+	instance = aws_instance.app-ec2.id
+}
+
+output "public_ip" {
+  value = aws_eip.app-eip.public_ip
 }
 
 resource "aws_security_group" "app-sg" {
