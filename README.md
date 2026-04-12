@@ -101,6 +101,18 @@ A modern, containerized weather forecast web application built with FastAPI and 
 
 ## 🔄 Architecture & CI/CD Pipeline
 
+```mermaid
+graph LR
+    A[Developer Push Code] --> B(GitHub Actions)
+    B --> C{1. Test Job}
+    C -->|Pass| D{2. Build & Push}
+    C -->|Fail| Z[Stop]
+    D --> |Push Images| E[(Docker Hub)]
+    D --> |Trigger| F{3. Deploy Job}
+    F --> |SSH & Pull| G[AWS EC2 Server]
+    G --> H((App Running))
+```
+
 This project utilizes **Terraform** to automatically provision infrastructure on AWS (EC2 instance, Security Groups) and a robust CI/CD pipeline using GitHub Actions. Upon pushing to the main branch, the following automated jobs are triggered:
 
 1. **Test Job (`test`):**
