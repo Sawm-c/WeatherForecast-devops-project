@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:13
@@ -12,7 +10,7 @@ services:
       - weather_db:/var/lib/postgresql/data  
       - ./database:/docker-entrypoint-initdb.d
   app: 
-    build: .
+    image: ${DOCKERHUB_USERNAME}/weather-app:latest
     ports:
       - "8080:80"
     depends_on:
