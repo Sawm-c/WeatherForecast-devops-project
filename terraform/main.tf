@@ -29,8 +29,9 @@ sudo systemctl enable docker
 sudo usermod -aG docker ec2-user
 
 sudo yum install docker-compose-plugin -y 
-sudo chmod +x /usr/local/bin/docker-compose
 EOF
+
+  user_data_replace_on_change = true
 }
 
 resource "aws_eip" "app-eip" {
