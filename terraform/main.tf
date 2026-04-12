@@ -28,7 +28,13 @@ sudo systemctl enable docker
 
 sudo usermod -aG docker ec2-user
 
-sudo yum install docker-compose-plugin -y 
+# Cài đặt Docker Compose V2 thủ công
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Tạo liên kết để lệnh 'docker compose' hoạt động
+sudo mkdir -p /usr/libexec/docker/cli-plugins/
+sudo ln -s /usr/local/bin/docker-compose /usr/libexec/docker/cli-plugins/docker-compose
 EOF
 
   user_data_replace_on_change = true
