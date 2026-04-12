@@ -26,8 +26,11 @@ A modern, containerized weather forecast web application built with FastAPI and 
 - **Google Fonts** - Poppins typography
 
 ### DevOps & Infrastructure
-- **Docker & Docker Compose** - Containerization and orchestration
+- **Docker & Docker Compose V2** - Containerization and orchestration
 - **GitHub Actions** - CI/CD pipeline runner
+- **Terraform** - Infrastructure as Code (IaC) to provision AWS EC2
+- **AWS EC2** - Production hosting environment
+- **Nginx** - Web server and reverse proxy
 - **Flake8** - Python code linter (PEP 8 compliance)
 - **PostgreSQL 13** - Relational database 
 
@@ -55,9 +58,9 @@ A modern, containerized weather forecast web application built with FastAPI and 
    # Weather API
    API_KEY=your_weatherapi_key_here
    ```
-3. **Start the application using Docker Compose**
+3. **Start the application using Docker Compose V2**
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
 
    Open your browser and navigate to `http://localhost:8080` to see the weather app in action.
    ```
@@ -75,35 +78,47 @@ A modern, containerized weather forecast web application built with FastAPI and 
 ## 📁 Project Structure
 ```
 .
-├── .github/workflows/   # GitHub Actions CI/CD configurations
-│   └── main.yml         # Pipeline for testing and pushing Docker images
+├── .github/workflows/   # GitHub Actions CI/CD pipeline configurations
+│   └── main.yml         # Pipeline for testing, building, and deployment
 ├── backend/             # Backend application code
 │   ├── app.py           # Main FastAPI application and routing
+│   ├── Dockerfile       # Blueprint for the backend container
 │   └── requirements.txt # Python dependencies
 ├── database/            # Database initialization scripts
 │   └── init.sql         # Table schemas and initial configurations
 ├── frontend/            # Frontend assets and interface
 │   ├── images/          # Dynamic weather background images
-│   └── index.html       # Main application UI
+│   ├── index.html       # Main application UI
+│   ├── Dockerfile       # Blueprint for the Nginx frontend container
+│   └── nginx.conf       # Nginx reverse proxy configurations
+├── terraform/           # Infrastructure as Code (IaC)
+│   ├── main.tf          # AWS EC2 & Security Group provisioning
+│   └── variable.tf      # Variables for Terraform
 ├── docker-compose.yml   # Multi-container orchestration config
-├── Dockerfile           # Blueprint for the application image
 ├── .gitignore           # Ignored files and directories
 └── README.md            # Project documentation
 ```
 
-## 🔄 CI/CD Pipeline Architecture
-This project implements a robust CI/CD pipeline using GitHub Actions. Every time code is pushed to the main branch, the following automated jobs are triggered:
+## 🔄 Architecture & CI/CD Pipeline
 
-1. **Test-Code Job:**
+This project utilizes **Terraform** to automatically provision infrastructure on AWS (EC2 instance, Security Groups) and a robust CI/CD pipeline using GitHub Actions. Upon pushing to the main branch, the following automated jobs are triggered:
+
+1. **Test Job (`test`):**
    - Sets up an Ubuntu runner with Python 3.11.
    - Installs dependencies.
-   - Runs flake8 to enforce PEP 8 coding standards and catch syntax errors.
+   - Runs `flake8` to enforce PEP 8 coding standards and catch syntax errors in the backend code.
 
-2. **Build-and-Push Job:**
-   - Waits for the Test-Code job to pass successfully.
+2. **Build and Push Job (`build-and-push`):**
+   - Waits for the `test` job to pass successfully.
    - Securely logs into Docker Hub using GitHub Secrets.
-   - Builds the Docker image and tags it with both latest and the dynamic Git commit SHA/tag.
-   - Pushes the image to the Docker Hub registry.
+   - Builds separate Docker images for the frontend (Nginx) and backend (FastAPI).
+   - Tags and pushes both images to the Docker Hub registry.
+
+3. **Deploy Job (`deploy`):**
+   - Waits for the `build-and-push` job to complete.
+   - Connects to the AWS EC2 instance strictly via SSH.
+   - Pulls the latest system code and updates the `.env` file with secure repository secrets (including Docker Hub username).
+   - Pulls the latest Docker images from Docker Hub and orchestrates the deployment using `docker compose`.
 
 ## 🤝 Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
