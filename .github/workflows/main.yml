@@ -71,6 +71,7 @@ jobs:
             echo "DB_PASSW=${{ secrets.DB_PASSW }}" >> .env
             echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
             echo "API_KEY=${{ secrets.API_KEY }}" >> .env
+            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
             
             docker compose pull app
             docker compose up -d
