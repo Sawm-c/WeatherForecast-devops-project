@@ -21,6 +21,7 @@ resource "aws_instance" "weather_app" {
   user_data = <<-EOF
 #!/bin/bash
 sudo yum update -y
+sudo yum install git docker -y
 
 sudo systemctl start docker
 sudo systemctl enable docker
@@ -55,6 +56,13 @@ resource "aws_security_group" "weather-sg" {
   ingress {
     from_port   = 8080
     to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 8000
+    to_port     = 8000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
