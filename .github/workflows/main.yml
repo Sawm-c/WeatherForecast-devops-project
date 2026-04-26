@@ -41,21 +41,24 @@ jobs:
           username: ${{secrets.DOCKERHUB_USERNAME}}
           password: ${{secrets.DOCKERHUB_TOKEN}}
 
-      - name: build and push backend
+      - name: Build and Push Backend
         uses: docker/build-push-action@v5
         with:
-          context: |
-            ./backend
-            ./frontend
+          context: ./backend
           push: true
           tags: |
-           ${{secrets.DOCKERHUB_USERNAME}}/weather-backend:latest
-           ${{secrets.DOCKERHUB_USERNAME}}/weather-frontend:latest
-           ${{secrets.DOCKERHUB_USERNAME}}/weather-backend:${{github.ref_name}}
-           ${{secrets.DOCKERHUB_USERNAME}}/weather-frontend:${{github.ref_name}}
+            ${{secrets.DOCKERHUB_USERNAME}}/weather-backend:latest
+            ${{secrets.DOCKERHUB_USERNAME}}/weather-backend:${{github.ref_name}}
 
-      - name: build and push frontend
-        uses: docker
+      - name: Build and Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{secrets.DOCKERHUB_USERNAME}}/weather-frontend:latest
+            ${{secrets.DOCKERHUB_USERNAME}}/weather-frontend:${{github.ref_name}}
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -80,7 +83,5 @@ jobs:
             echo "API_KEY=${{ secrets.API_KEY }}" >> .env
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
             
-            docker compose pull app
+            docker compose pull
             docker compose up -d
-
-  
