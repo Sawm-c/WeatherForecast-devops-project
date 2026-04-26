@@ -1,35 +1,31 @@
 services:
   db:
     image: postgres:13
-    environment: 
+    environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSW}
       POSTGRES_DB: ${DB_NAME}
-
-    volumes: 
-      - weather_db:/var/lib/postgresql/data  
+    volumes:
+      - weather_db:/var/lib/postgresql/data
       - ./database:/docker-entrypoint-initdb.d
-  backend: 
-    # build: .
+    restart: always
+
+  backend:
     image: ${DOCKERHUB_USERNAME}/weather-backend:latest
-    ports:
-      - "8080:80"
     depends_on:
       - db
     restart: always
     environment:
-      - name=value
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSW}@db:5432/${DB_NAME}
       - API_KEY=${API_KEY}
 
-# frontend:
-
-
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/weather-frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
 
 volumes:
   weather_db:
-
-
-
-
-
