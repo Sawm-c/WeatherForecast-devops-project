@@ -9,9 +9,9 @@ services:
     volumes: 
       - weather_db:/var/lib/postgresql/data  
       - ./database:/docker-entrypoint-initdb.d
-  app: 
+  backend: 
     # build: .
-    image: ${DOCKERHUB_USERNAME}/weather-app:latest
+    image: ${DOCKERHUB_USERNAME}/weather-backend:latest
     ports:
       - "8080:80"
     depends_on:
@@ -21,8 +21,15 @@ services:
       - name=value
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSW}@db:5432/${DB_NAME}
       - API_KEY=${API_KEY}
+
+# frontend:
+
+
+
 volumes:
   weather_db:
+
+
 
 
 

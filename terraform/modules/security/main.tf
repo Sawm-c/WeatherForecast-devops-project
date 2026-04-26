@@ -1,10 +1,11 @@
 resource "aws_security_group" "weather-sg" {
   name        = "WeatherForecast-sg"
-  description = "App firewall"
+  description = "Gatekeeper firewall (Allow SSH and Web only)"
   vpc_id      = var.vpc_id
   tags = var.common_tags
 
   ingress {
+    description = "SSH for management"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -12,15 +13,9 @@ resource "aws_security_group" "weather-sg" {
   }
 
   ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 8000
-    to_port     = 8000
+    description = "Public Web Traffic"
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

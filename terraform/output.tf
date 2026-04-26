@@ -1,5 +1,6 @@
 output "weather_app_url" {
-  value = "http://${module.app.weather_app_ip}:8000"
+  description = "Địa chỉ truy cập Website"
+  value       = "http://${module.app.weather_app_ip}"
 }
 
 output "weather_app_ip" {

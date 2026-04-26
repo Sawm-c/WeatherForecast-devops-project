@@ -41,14 +41,21 @@ jobs:
           username: ${{secrets.DOCKERHUB_USERNAME}}
           password: ${{secrets.DOCKERHUB_TOKEN}}
 
-      - name: build and push
+      - name: build and push backend
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
+          context: |
+            ./backend
+            ./frontend
           push: true
           tags: |
-           ${{secrets.DOCKERHUB_USERNAME}}/weather-app:latest
-           ${{secrets.DOCKERHUB_USERNAME}}/weather-app:${{github.ref_name}}
+           ${{secrets.DOCKERHUB_USERNAME}}/weather-backend:latest
+           ${{secrets.DOCKERHUB_USERNAME}}/weather-frontend:latest
+           ${{secrets.DOCKERHUB_USERNAME}}/weather-backend:${{github.ref_name}}
+           ${{secrets.DOCKERHUB_USERNAME}}/weather-frontend:${{github.ref_name}}
+
+      - name: build and push frontend
+        uses: docker
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
