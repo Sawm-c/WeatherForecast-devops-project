@@ -10,6 +10,7 @@ services:
       - weather_db:/var/lib/postgresql/data  
       - ./database:/docker-entrypoint-initdb.d
   app: 
+    # build: .
     image: ${DOCKERHUB_USERNAME}/weather-app:latest
     ports:
       - "8080:80"
