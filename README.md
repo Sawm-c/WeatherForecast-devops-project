@@ -10,7 +10,9 @@ A modern, containerized weather forecast web application built with FastAPI and 
 - **🎨 Dynamic Interface**: Background images change dynamically based on the current weather condition (rain, clear, thunder, fog, etc.) and time of day.
 - **💡 Smart Advice**: Intelligent recommendations based on temperature, humidity, and wind speed.
 - **🐳 Containerized Environment**: Fully isolated multi-container setup using Docker and Docker Compose.
-- **⚙️ Automated CI/CD**: Automated code linting and Docker image build/push processes triggered on every push to the main branch.
+- **⚙️ Automated CI/CD**: Automated code linting and Docker image build/push processes triggered on every push.
+- **☁️ Cloud-Native Integration**: Uses **AWS S3** for centralized configuration storage and **VPC Gateway Endpoints** for secure, private data transfer between EC2 and S3.
+- **🛡️ IAM Security**: Implements **IAM Instance Profiles** for least-privilege resource access, eliminating the need for hardcoded credentials.
 - **📱 Responsive Design**: Clean and modern glass-morphism UI built with Tailwind CSS.
 
 ## 🛠️ Tech Stack
@@ -31,8 +33,11 @@ A modern, containerized weather forecast web application built with FastAPI and 
 ### DevOps & Infrastructure
 - **Docker & Docker Compose V2** - Containerization and orchestration
 - **GitHub Actions** - CI/CD pipeline runner
-- **Terraform** - Infrastructure as Code (IaC) to provision AWS EC2
+- **Terraform** - Infrastructure as Code (IaC) to provision AWS resources
 - **AWS EC2** - Production hosting environment
+- **AWS S3** - Centralized storage for database initialization scripts (`init.sql`)
+- **AWS VPC Endpoint** - Private Gateway for secure EC2-to-S3 communication
+- **AWS IAM** - Least-privilege roles for secure service-to-service interaction
 - **Nginx** - Web server and reverse proxy
 - **Flake8** - Python code linter (PEP 8 compliance)
 - **PostgreSQL 13** - Relational database 
@@ -132,6 +137,7 @@ This project utilizes **Terraform** to automatically provision infrastructure on
         └─▶ 🚀 3. Deploy Job (via EC2 SSH)
                  ├─ Connect to AWS EC2 instance
                  ├─ Pull latest repository code & populate .env
+                 ├─ ☁️ **Fetch init.sql from S3 via VPC Endpoint** (Secure & Private)
                  └─ Run `docker compose up` to orchestrate new containers
 ```
 

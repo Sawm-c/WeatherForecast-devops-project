@@ -1,19 +1,35 @@
 variable "aws_instance" {
-    type = string
-    default = "ami-04d7457c43c292911"
+  type = string
 }
 
-variable "weather_key" {
-    type = string
-    default = "D:/Project/weatherforecast-key/wf-keypairs.pub"
+variable "weather_key_name" {
+  type = string
+}
+
+variable "weather_key_path" {
+  type = string
 }
 
 variable "region" {
-    type = string
-    default = "ap-southeast-1"
+  type = string
 }
 
 variable "instance_type" {
-    type = string
-    default = "t3.micro"
+  type = string
+}
+
+variable "common_tags" {
+  type = map(string)
+}
+
+variable "azs" {
+  type = list(any)
+}
+
+variable "cidr_blocks" {
+  type = string
+}
+
+variable "bucket_name" {
+  type = string
 }

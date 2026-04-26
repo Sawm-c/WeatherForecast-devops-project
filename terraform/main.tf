@@ -3,81 +3,56 @@ provider "aws" {
 }
 
 resource "aws_key_pair" "weatherforecast_key" {
-  key_name   = "weatherforecast_key"
-  public_key = file(var.weather_key)
+  key_name   = var.weather_key_name
+  public_key = file(var.weather_key_path)
 }
 
-resource "aws_instance" "weather_app" {
-  ami                    = var.aws_instance
-  instance_type          = var.instance_type
-  key_name               = aws_key_pair.weatherforecast_key.key_name
-  vpc_security_group_ids = [aws_security_group.weather-sg.id]
 
-  tags = {
-    Name        = "WeatherForecast-ec2"
-    Environment = "Production"
-  }
-
-  user_data = <<-EOF
-#!/bin/bash
-sudo yum update -y
-sudo yum install git docker -y
-
-sudo systemctl start docker
-sudo systemctl enable docker
-
-sudo usermod -aG docker ec2-user
-
-# Cài đặt Docker Compose V2 thủ công
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-# Tạo liên kết để lệnh 'docker compose' hoạt động
-sudo mkdir -p /usr/libexec/docker/cli-plugins/
-sudo ln -s /usr/local/bin/docker-compose /usr/libexec/docker/cli-plugins/docker-compose
-EOF
-
-  user_data_replace_on_change = true
+module "network" {
+  source      = "./modules/network"
+  azs         = var.azs
+  cidr_blocks = var.cidr_blocks
+  common_tags = var.common_tags
+  region      = var.region
 }
 
-resource "aws_eip" "app-eip" {
-  instance = aws_instance.weather_app.id
-  domain   = "vpc"
+module "security" {
+  source      = "./modules/security"
+  vpc_id      = module.network.vpc_id
+  common_tags = var.common_tags
 }
 
-output "public_ip" {
-  value = aws_eip.app-eip.public_ip
+module "storage" {
+  source      = "./modules/storage"
+  bucket_name = var.bucket_name
+  common_tags = var.common_tags
 }
 
-resource "aws_security_group" "weather-sg" {
-  name        = "WeatherForecast-sg"
-  description = "App firewall"
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 8000
-    to_port     = 8000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+module "iam" {
+  source      = "./modules/iam"
+  bucket_arn  = module.storage.bucket_arn
+  common_tags = var.common_tags
 }
+
+module "app" {
+  source                    = "./modules/app"
+  aws_instance              = var.aws_instance
+  instance_type             = var.instance_type
+  common_tags               = var.common_tags
+  subnet_id                 = module.network.public_subnets[0]
+  iam_instance_profile_name = module.iam.iam_instance_profile_name
+  weather_key_name          = aws_key_pair.weatherforecast_key.key_name
+  security_group_id         = module.security.security_group_id
+  bucket_id                 = module.storage.bucket_id
+
+}
+
+
+
+
+
+
+
+
+
+
