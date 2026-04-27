@@ -1,74 +1,117 @@
 # 🌤️ WeatherForecast DevOps Project
 
-A production-ready weather forecasting web application built with a modern **DevOps stack** — fully automated from code to cloud.
+A production-ready weather forecasting web application deployed on **AWS** using a fully automated **DevOps pipeline** — from code commit to live server in under 2 minutes.
 
-> **Live Demo:** [http://\<EC2_IP\>](http://localhost) | **GitHub Actions:** See [CI/CD Pipeline](.github/workflows/main.yml)
+> **Stack:** Python · FastAPI · PostgreSQL · Docker · Terraform · GitHub Actions · AWS
+
+---
+
+## 📸 Application Demo
+
+![Weather Dashboard running on AWS EC2](./docs/app-demo.png)
+
+> *Live at `http://54.169.209.239` — deployed automatically via GitHub Actions to AWS EC2*
 
 ---
 
 ## 📐 Architecture Overview
 
 ```
-                         ┌─────────────────────────────────────────────────┐
-                         │                  AWS Cloud                       │
-                         │                                                  │
-  User Browser           │    ┌──────────────────────────────────────────┐  │
-      │                  │    │             VPC (10.0.0.0/16)            │  │
-      │  HTTP :80        │    │                                          │  │
-      ▼                  │    │  ┌─────────────────────────────────────┐ │  │
- ┌─────────┐  EIP  ──────┼────┼─▶│          EC2 (t2.micro)            │ │  │
- │ Internet│             │    │  │                                     │ │  │
- └─────────┘             │    │  │  ┌──────────┐    ┌─────────────┐   │ │  │
-                         │    │  │  │  Nginx   │───▶│  FastAPI    │   │ │  │
-                         │    │  │  │(Frontend)│    │  (Backend)  │   │ │  │
-                         │    │  │  └──────────┘    └──────┬──────┘   │ │  │
-                         │    │  │                         │          │ │  │
-                         │    │  │                  ┌──────▼──────┐   │ │  │
-                         │    │  │                  │  PostgreSQL  │   │ │  │
-                         │    │  │                  │     (DB)     │   │ │  │
-                         │    │  │                  └─────────────┘   │ │  │
-                         │    │  └─────────────────────────────────────┘ │  │
-                         │    │                                          │  │
-                         │    │  ┌──────────┐  ┌──────────┐             │  │
-                         │    │  │    S3    │  │   IAM    │             │  │
-                         │    │  │ (Storage)│  │  (Role)  │             │  │
-                         │    │  └──────────┘  └──────────┘             │  │
-                         │    └──────────────────────────────────────────┘  │
-                         └─────────────────────────────────────────────────┘
+                         ┌──────────────────────────────────────────────────────┐
+                         │               AWS Cloud (ap-southeast-1)              │
+                         │                                                       │
+  Developer              │    ┌────────────────────────────────────────────────┐ │
+      │                  │    │              VPC  10.0.0.0/16                  │ │
+      │ git push         │    │                                                │ │
+      ▼                  │    │   Public Subnet                                │ │
+  GitHub Actions ────────┼────┼──▶  ┌──────────────────────────────────────┐  │ │
+  (CI/CD Pipeline)       │    │     │  EC2 t3.micro  (Elastic IP)          │  │ │
+                         │    │     │                                       │  │ │
+  User Browser           │    │     │   ┌──────────┐    ┌──────────────┐   │  │ │
+      │                  │    │     │   │  Nginx   │───▶│   FastAPI    │   │  │ │
+      │ HTTP :80         │    │     │   │ :80      │    │   :8000      │   │  │ │
+      └────────────────────────────▶│   └──────────┘    └──────┬───────┘   │  │ │
+                         │    │     │                          │           │  │ │
+                         │    │     │                   ┌──────▼───────┐   │  │ │
+                         │    │     │                   │  PostgreSQL  │   │  │ │
+                         │    │     │                   │     :5432    │   │  │ │
+                         │    │     │                   └──────────────┘   │  │ │
+                         │    │     └──────────────────────────────────────┘  │ │
+                         │    │                                                │ │
+                         │    │   ┌──────────┐   ┌────────┐   ┌───────────┐  │ │
+                         │    │   │ S3 Bucket│   │  IAM   │   │ Sec Group │  │ │
+                         │    │   └──────────┘   └────────┘   └───────────┘  │ │
+                         │    └────────────────────────────────────────────────┘ │
+                         └──────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 🔄 CI/CD Pipeline
 
+Every push to `main` triggers a **3-stage automated pipeline** — zero manual steps:
+
 ```
-  Push to main
-       │
-       ▼
-  ┌─────────┐     ┌──────────────────────┐     ┌────────────────────────┐
-  │  Test   │────▶│   Build & Push       │────▶│   Deploy to EC2        │
-  │         │     │                      │     │                        │
-  │ flake8  │     │ Docker build backend │     │ SSH into server        │
-  │ lint    │     │ Docker build frontend│     │ git pull               │
-  └─────────┘     │ Push to Docker Hub   │     │ docker compose pull    │
-                  └──────────────────────┘     │ docker compose up -d   │
-                                               └────────────────────────┘
+  git push origin main
+         │
+         ▼
+  ┌────────────┐     ┌──────────────────────────┐     ┌───────────────────────┐
+  │   Stage 1  │     │        Stage 2           │     │       Stage 3         │
+  │    TEST    │────▶│     BUILD & PUSH         │────▶│     DEPLOY TO EC2     │
+  │            │     │                          │     │                       │
+  │  flake8    │     │  docker build backend    │     │  SSH into EC2         │
+  │  syntax    │     │  docker build frontend   │     │  docker compose pull  │
+  │  check     │     │  push to Docker Hub      │     │  docker compose up -d │
+  └────────────┘     └──────────────────────────┘     └───────────────────────┘
 ```
+
+### Pipeline Results — All Stages Green ✅
+
+**Stage 1 — Code Quality Check (flake8)**
+![Test Job](./docs/pipeline-overview.png)
+
+**Stage 2 — Build Docker Images & Push to Docker Hub**
+![Build and Push Job](./docs/pipeline-build-push.png)
+
+**Stage 3 — Deploy to AWS EC2 via SSH**
+![Deploy Job](./docs/pipeline-deploy.png)
+
+---
+
+## ☁️ Infrastructure as Code (Terraform)
+
+Infrastructure is fully defined in **modular Terraform** — reproducible with a single `terraform apply`.
+
+**31 AWS resources provisioned automatically:**
+
+| Module | Resources Created |
+|---|---|
+| `network` | VPC, Public/Private Subnets, IGW, NAT Gateway, Route Tables, VPC Endpoint |
+| `security` | Security Groups (HTTP :80, SSH :22) |
+| `iam` | IAM Role, Policy, Instance Profile |
+| `storage` | S3 Bucket |
+| `app` | EC2 Instance (t3.micro), Elastic IP |
+
+**Terraform Apply Output:**
+![Terraform Apply Complete](./docs/terraform-apply.png)
+
+**AWS EC2 Console — Instance Running:**
+![AWS EC2 Instance](./docs/aws-ec2.png)
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer                | Technology                                 |
-| -------------------- | ------------------------------------------ |
-| **Frontend**         | HTML, CSS (TailwindCSS), JavaScript, Nginx |
-| **Backend**          | Python, FastAPI, Uvicorn                   |
-| **Database**         | PostgreSQL 13                              |
-| **Containerization** | Docker, Docker Compose                     |
-| **CI/CD**            | GitHub Actions                             |
-| **Infrastructure**   | Terraform (IaC)                            |
-| **Cloud**            | AWS (EC2, S3, VPC, IAM, EIP)               |
-| **Registry**         | Docker Hub                                 |
+| Layer                | Technology                                        |
+| -------------------- | ------------------------------------------------- |
+| **Frontend**         | HTML, CSS (TailwindCSS), JavaScript, Nginx        |
+| **Backend**          | Python 3, FastAPI, Uvicorn                        |
+| **Database**         | PostgreSQL 13                                     |
+| **Containerization** | Docker, Docker Compose                            |
+| **CI/CD**            | GitHub Actions (3-stage pipeline)                 |
+| **Infrastructure**   | Terraform — modular architecture (5 modules)      |
+| **Cloud**            | AWS (EC2, S3, VPC, IAM, EIP, NAT GW, VPC Endpoint)|
+| **Registry**         | Docker Hub                                        |
 
 ---
 
@@ -78,29 +121,30 @@ A production-ready weather forecasting web application built with a modern **Dev
 WeatherForecast-devops-project/
 ├── .github/
 │   └── workflows/
-│       └── main.yml          # CI/CD Pipeline
+│       └── main.yml              # CI/CD Pipeline: Test → Build → Deploy
 ├── backend/
-│   ├── app.py                # FastAPI application
+│   ├── app.py                    # FastAPI application & weather API integration
 │   ├── requirements.txt
 │   └── Dockerfile
 ├── frontend/
-│   ├── index.html            # Weather Dashboard UI
-│   ├── nginx.conf            # Reverse proxy config
+│   ├── index.html                # Weather Dashboard UI
+│   ├── nginx.conf                # Reverse proxy: routes /api/* to FastAPI
 │   └── Dockerfile
 ├── database/
-│   └── init.sql              # DB initialization script
+│   └── init.sql                  # PostgreSQL schema initialization
 ├── terraform/
-│   ├── main.tf               # Root module
+│   ├── main.tf                   # Root module — orchestrates all child modules
 │   ├── variable.tf
 │   ├── terraform.tfvars
-│   ├── output.tf
+│   ├── output.tf                 # Outputs: EC2 IP, app URL
 │   └── modules/
-│       ├── network/          # VPC, Subnets, NAT Gateway
-│       ├── security/         # Security Groups
-│       ├── iam/              # IAM Roles & Policies
-│       ├── storage/          # S3 Bucket
-│       └── app/              # EC2 Instance, EIP
-└── docker-compose.yml
+│       ├── network/              # VPC, Subnets, IGW, NAT GW, VPC Endpoint
+│       ├── security/             # Security Groups
+│       ├── iam/                  # IAM Role, Policy & Instance Profile
+│       ├── storage/              # S3 Bucket
+│       └── app/                  # EC2 Instance, Elastic IP
+├── docs/                         # Screenshots & documentation assets
+└── docker-compose.yml            # Multi-container orchestration
 ```
 
 ---
@@ -108,12 +152,12 @@ WeatherForecast-devops-project/
 ## ✨ Key Features
 
 - **3-Tier Architecture:** Nginx (FE) → FastAPI (BE) → PostgreSQL (DB), all containerized.
-- **Reverse Proxy:** Nginx routes `/api/*` requests to FastAPI internally — no exposed backend ports.
+- **Reverse Proxy:** Nginx routes `/api/*` requests to FastAPI internally — backend port not exposed.
 - **Weather Caching:** API responses cached in PostgreSQL for 30 minutes to reduce external API calls.
-- **Fully Automated CI/CD:** Every push to `main` triggers build, test, and deployment automatically.
-- **Infrastructure as Code:** Entire AWS infrastructure defined and reproducible via Terraform modules.
-- **Least-Privilege IAM:** EC2 has only the permissions it needs to read from S3.
-- **Private Networking:** Database is not exposed to the internet; only accessible within the VPC.
+- **Fully Automated CI/CD:** Every `git push` triggers test, build, and deploy — no manual steps.
+- **Infrastructure as Code:** All 31 AWS resources defined in modular, reusable Terraform modules.
+- **Least-Privilege IAM:** EC2 instance has only the minimum permissions needed to access S3.
+- **Private Networking:** PostgreSQL is not exposed to the internet — only reachable within the VPC.
 
 ---
 
@@ -121,19 +165,23 @@ WeatherForecast-devops-project/
 
 ### Prerequisites
 
-- AWS CLI configured
-- Terraform >= 1.0
+- AWS CLI configured (`aws configure`)
+- Terraform >= 1.0 installed
 - SSH key pair generated
 
-### 1. Provision Infrastructure
+### 1. Provision AWS Infrastructure
 
 ```bash
 cd terraform
 terraform init
+terraform plan
 terraform apply
+# Output: weather_app_ip = "xx.xx.xx.xx"
 ```
 
 ### 2. Configure GitHub Secrets
+
+Add these to **Settings → Secrets and variables → Actions** in your GitHub repo:
 
 | Secret               | Description                            |
 | -------------------- | -------------------------------------- |
@@ -151,39 +199,34 @@ terraform apply
 
 ```bash
 git push origin main
-# GitHub Actions will automatically build, push images, and deploy to EC2
+# GitHub Actions will automatically:
+# ✅ Stage 1: Run flake8 syntax check
+# ✅ Stage 2: Build & push Docker images to Docker Hub
+# ✅ Stage 3: SSH into EC2 and deploy with Docker Compose
 ```
 
 ---
 
 ## 🌐 API Endpoints
 
-| Method | Endpoint                   | Description                 |
-| ------ | -------------------------- | --------------------------- |
-| `GET`  | `/`                        | Weather Dashboard UI        |
-| `GET`  | `/api/weather?city={city}` | Get weather data for a city |
+| Method | Endpoint                   | Description                      |
+| ------ | -------------------------- | -------------------------------- |
+| `GET`  | `/`                        | Serve Weather Dashboard UI       |
+| `GET`  | `/api/weather?city={city}` | Fetch weather data for any city  |
 
 ---
 
 ## 💡 What I Learned
 
-- Designing a **modular Terraform** infrastructure with reusable components.
-- Implementing a **3-tier containerized** application with Docker Compose.
-- Configuring **Nginx as a reverse proxy** to route traffic between services.
-- Building a complete **CI/CD pipeline** with GitHub Actions for automated deployments.
-- Applying **AWS security best practices** (Security Groups, IAM least-privilege, private subnets).
-- Managing **infrastructure state** and resolving Terraform state lock issues.
-
----
-
-## 📸 Screenshots
-
-> _(Add screenshots of the running app, GitHub Actions pipeline, and AWS Console here)_
+- Designing **modular Terraform** infrastructure with reusable, composable child modules.
+- Implementing a **3-tier containerized** application with Docker Compose networking.
+- Configuring **Nginx as a reverse proxy** to route traffic internally between services.
+- Building a complete **CI/CD pipeline** with GitHub Actions for fully automated deployments.
+- Applying **AWS security best practices**: Security Groups, IAM least-privilege, private subnets.
+- Managing **Terraform state** and resolving dependency/pathing issues between modules.
 
 ---
 
 ## 📄 License
 
 MIT License — feel free to use this project as a reference.
- 
- 
