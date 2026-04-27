@@ -102,16 +102,21 @@ Infrastructure is fully defined in **modular Terraform** — reproducible with a
 
 ## 🛠️ Tech Stack
 
-| Layer                | Technology                                        |
-| -------------------- | ------------------------------------------------- |
-| **Frontend**         | HTML, CSS (TailwindCSS), JavaScript, Nginx        |
-| **Backend**          | Python 3, FastAPI, Uvicorn                        |
-| **Database**         | PostgreSQL 13                                     |
-| **Containerization** | Docker, Docker Compose                            |
-| **CI/CD**            | GitHub Actions (3-stage pipeline)                 |
-| **Infrastructure**   | Terraform — modular architecture (5 modules)      |
-| **Cloud**            | AWS (EC2, S3, VPC, IAM, EIP, NAT GW, VPC Endpoint)|
-| **Registry**         | Docker Hub                                        |
+**Application**
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+
+**DevOps & Infrastructure**
+
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
+![Amazon AWS](https://img.shields.io/badge/Amazon_AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)
+![Docker Hub](https://img.shields.io/badge/Docker_Hub-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 ---
 
