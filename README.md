@@ -1,18 +1,8 @@
 # 🌤️ WeatherForecast DevOps Project
 
-A **3-tier containerized web application** that fetches real-time weather data, built end-to-end with a production DevOps workflow.
-
-The application runs **Nginx → FastAPI → PostgreSQL** inside Docker containers on an **AWS EC2** instance. All 31 cloud resources (VPC, Subnets, IAM, Security Groups, S3, EIP...) are provisioned automatically using **modular Terraform**. Every `git push` triggers a **3-stage GitHub Actions pipeline** — code quality check → Docker build & push to Docker Hub → zero-touch SSH deploy — completing the full cycle in under 2 minutes.
+A production-ready weather forecasting web application deployed on **AWS** using a fully automated **DevOps pipeline** — from code commit to live server in under 2 minutes.
 
 > **Stack:** Python · FastAPI · PostgreSQL · Docker · Terraform · GitHub Actions · AWS
-
----
-
-## 📸 Application Demo
-
-![Weather Dashboard running on AWS EC2](./docs/app-demo.png)
-
-> *Live at `http://54.169.209.239` — deployed automatically via GitHub Actions to AWS EC2*
 
 ---
 
@@ -86,13 +76,13 @@ Infrastructure is fully defined in **modular Terraform** — reproducible with a
 
 **31 AWS resources provisioned automatically:**
 
-| Module | Resources Created |
-|---|---|
-| `network` | VPC, Public/Private Subnets, IGW, NAT Gateway, Route Tables, VPC Endpoint |
-| `security` | Security Groups (HTTP :80, SSH :22) |
-| `iam` | IAM Role, Policy, Instance Profile |
-| `storage` | S3 Bucket |
-| `app` | EC2 Instance (t3.micro), Elastic IP |
+| Module     | Resources Created                                                         |
+| ---------- | ------------------------------------------------------------------------- |
+| `network`  | VPC, Public/Private Subnets, IGW, NAT Gateway, Route Tables, VPC Endpoint |
+| `security` | Security Groups (HTTP :80, SSH :22)                                       |
+| `iam`      | IAM Role, Policy, Instance Profile                                        |
+| `storage`  | S3 Bucket                                                                 |
+| `app`      | EC2 Instance (t3.micro), Elastic IP                                       |
 
 **Terraform Apply Output:**
 ![Terraform Apply Complete](./docs/terraform-apply.png)
@@ -216,10 +206,10 @@ git push origin main
 
 ## 🌐 API Endpoints
 
-| Method | Endpoint                   | Description                      |
-| ------ | -------------------------- | -------------------------------- |
-| `GET`  | `/`                        | Serve Weather Dashboard UI       |
-| `GET`  | `/api/weather?city={city}` | Fetch weather data for any city  |
+| Method | Endpoint                   | Description                     |
+| ------ | -------------------------- | ------------------------------- |
+| `GET`  | `/`                        | Serve Weather Dashboard UI      |
+| `GET`  | `/api/weather?city={city}` | Fetch weather data for any city |
 
 ---
 
