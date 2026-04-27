@@ -1,6 +1,8 @@
 # 🌤️ WeatherForecast DevOps Project
 
-A production-ready weather forecasting web application deployed on **AWS** using a fully automated **DevOps pipeline** — from code commit to live server in under 2 minutes.
+A **3-tier containerized web application** that fetches real-time weather data, built end-to-end with a production DevOps workflow.
+
+The application runs **Nginx → FastAPI → PostgreSQL** inside Docker containers on an **AWS EC2** instance. All 31 cloud resources (VPC, Subnets, IAM, Security Groups, S3, EIP...) are provisioned automatically using **modular Terraform**. Every `git push` triggers a **3-stage GitHub Actions pipeline** — code quality check → Docker build & push to Docker Hub → zero-touch SSH deploy — completing the full cycle in under 2 minutes.
 
 > **Stack:** Python · FastAPI · PostgreSQL · Docker · Terraform · GitHub Actions · AWS
 
