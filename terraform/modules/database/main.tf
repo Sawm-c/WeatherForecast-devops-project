@@ -17,13 +17,13 @@ resource "aws_instance" "weather_db" {
         sudo systemctl start postgresql15
         sudo systemctl enable postgresql15
 
-        # pull init from s3
+        # Đặt mật khẩu cho user postgres khớp với biến DB_PASSW
+        sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+
+        # Kéo init.sql từ S3 về và chạy khởi tạo bảng
         aws s3 cp s3://${var.bucket_id}/database/init.sql /tmp/init.sql
-
-        # init schema
-        sudo -u postgres psql < /tmp/init.sql
-
-    EOF
+        sudo -u postgres psql -f /tmp/init.sql
+  EOF
 
   user_data_replace_on_change = true
 }
