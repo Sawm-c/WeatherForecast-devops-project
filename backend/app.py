@@ -144,8 +144,8 @@ def get_advice(forecast):
 
 # Frontend route
 @app.get("/")
-async def read_index():
-    return FileResponse(os.path.join(frontend_dir, 'index.html'))
+def read_root():
+    return {"status": "ok", "message": "Weather Backend is running healthy"}
 
 
 # Weather API route

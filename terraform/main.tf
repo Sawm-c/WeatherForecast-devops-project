@@ -65,9 +65,12 @@ module "be" {
 }
 
 module "fe" {
-  source         = "./modules/fe"
-  fe_bucket_name = var.fe_bucket_name
-  common_tags    = var.common_tags
+  source              = "./modules/fe"
+  fe_bucket_name      = var.fe_bucket_name
+  common_tags         = var.common_tags
+  be_domain_name      = module.be.weather_be_public_dns
+  custom_domain_name  = var.custom_domain_name
+  acm_certificate_arn = var.acm_certificate_arn
 }
 
 

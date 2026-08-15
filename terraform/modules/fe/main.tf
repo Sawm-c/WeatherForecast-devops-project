@@ -56,6 +56,37 @@ resource "aws_cloudfront_distribution" "fe_distribution" {
     origin_id                = "S3-bucket-${aws_s3_bucket.fe_bucket.id}"
   }
 
+  # 2. Origin Backend (EC2)
+  origin {
+    domain_name = var.be_domain_name
+    origin_id   = "Backend-EC2"
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  #3. Chuyển tiếp /api/* về Backend EC2
+  ordered_cache_behavior {
+    path_pattern           = "/api/*"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "Backend-EC2"
+    viewer_protocol_policy = "redirect-to-https"
+    forwarded_values {
+      query_string = true
+      headers      = ["*"]
+      cookies {
+        forward = "all"
+      }
+    }
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
+  }
+
   default_cache_behavior {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
@@ -74,8 +105,12 @@ resource "aws_cloudfront_distribution" "fe_distribution" {
     }
   }
 
+  aliases = [var.custom_domain_name]
+
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn      = var.acm_certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 
 }
