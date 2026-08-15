@@ -28,9 +28,10 @@ jobs:
       - name: check syntax by flake8
         run: flake8 backend/app.py
   
-  build-and-push:
+  build-and-push-be:
     needs: test
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
@@ -50,25 +51,17 @@ jobs:
             ${{secrets.DOCKERHUB_USERNAME}}/weather-backend:latest
             ${{secrets.DOCKERHUB_USERNAME}}/weather-backend:${{github.ref_name}}
 
-      - name: Build and Push Frontend
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          push: true
-          tags: |
-            ${{secrets.DOCKERHUB_USERNAME}}/weather-frontend:latest
-            ${{secrets.DOCKERHUB_USERNAME}}/weather-frontend:${{github.ref_name}}
-
-  deploy:
-    needs: build-and-push
+  deploy-be:
+    needs: build-and-push-be
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-      - name: deploy to sv EC2
+      - name: Deploy to Backend EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{secrets.SV_IP}}
-          username: ${{secrets.SV_USER}}
-          key: ${{secrets.WF_PRV_KEY}}
+          host: ${{ secrets.SV_IP }}
+          username: ${{ secrets.SV_USER }}
+          key: ${{ secrets.WF_PRV_KEY }}
           script: |
             if [ ! -d "WeatherForecast-devops-project" ]; then
               git clone https://github.com/Sawm-c/WeatherForecast-devops-project.git
@@ -80,8 +73,33 @@ jobs:
             echo "DB_USER=${{ secrets.DB_USER }}" > .env
             echo "DB_PASSW=${{ secrets.DB_PASSW }}" >> .env
             echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+            echo "DB_PRIVATE_IP=${{ secrets.DB_PRIVATE_IP }}" >> .env
             echo "API_KEY=${{ secrets.API_KEY }}" >> .env
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
             
             docker compose pull
             docker compose up -d
+
+
+  deploy-fe:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{secrets.AWS_REGION}}
+
+      - name: Sync fe to s3
+        run: |
+          aws s3 sync ./frontend/ s3://${{ secrets.FE_BUCKET_NAME }} --delete
+
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.CF_DISTRIBUTION_ID }} --paths "/*"
