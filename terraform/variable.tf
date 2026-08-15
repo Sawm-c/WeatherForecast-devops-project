@@ -33,3 +33,8 @@ variable "cidr_blocks" {
 variable "bucket_name" {
   type = string
 }
+
+variable "fe_bucket_name" {
+  type = string
+}
+
