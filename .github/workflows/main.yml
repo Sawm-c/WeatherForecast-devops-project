@@ -73,7 +73,7 @@ jobs:
             echo "DB_USER=${{ secrets.DB_USER }}" > .env
             echo "DB_PASSW=${{ secrets.DB_PASSW }}" >> .env
             echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-            echo "DB_PRIVATE_IP=${{ secrets.DB_PRIVATE_IP }}" >> .env
+            echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
             echo "API_KEY=${{ secrets.API_KEY }}" >> .env
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
             
