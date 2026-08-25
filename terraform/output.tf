@@ -7,8 +7,9 @@ output "weather_be_ip" {
   value = module.be.weather_be_ip
 }
 
-output "database_prv_ip" {
-  value = module.database.db_private_ip
+output "database_host" {
+  description = "RDS endpoint hostname (dùng làm DB_HOST)"
+  value       = module.database.db_address
 }
 
 output "frontend_url" {

@@ -47,3 +47,22 @@ variable "acm_certificate_arn" {
   type        = string
   description = "ACM certificate ARN"
 }
+
+variable "db_name" {
+  type        = string
+  description = "Tên database trong RDS"
+  default     = "weatherdb"
+}
+
+variable "db_username" {
+  type        = string
+  description = "Username đăng nhập RDS"
+  default     = "postgres"
+}
+
+variable "db_password" {
+  type        = string
+  sensitive   = true
+  description = "Password đăng nhập RDS"
+}
+
