@@ -32,8 +32,38 @@ def get_db_connection():
         return None
 
 
+def init_db():
+    conn = get_db_connection()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS weather_data (
+                        id SERIAL PRIMARY KEY,
+                        city_name VARCHAR(100) UNIQUE NOT NULL,
+                        weather_data JSONB NOT NULL,
+                        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    );
+                """)
+                cur.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_city_name_unique
+                    ON weather_data (LOWER(city_name));
+                """)
+                conn.commit()
+                print("--- DB initialized successfully ---")
+        except Exception as e:
+            print(f"--- DB Init Error: {e} ---")
+        finally:
+            conn.close()
+    else:
+        print("--- DB not available, skipping init ---")
+
+
 # Initialize FastAPI app and static files
 app = FastAPI(title="Weather API", description="API for Weather DevOps")
+
+# Tự động khởi tạo DB khi app start
+init_db()
 
 app.add_middleware(
     CORSMiddleware,
