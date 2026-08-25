@@ -26,7 +26,7 @@ DATABASE_URL = os.getenv(
 
 def get_db_connection():
     try:
-        return psycopg2.connect(DATABASE_URL)
+        return psycopg2.connect(DATABASE_URL, connect_timeout=3)
     except Exception as e:
         print(f"--- DB Error: {e} ---")
         return None
