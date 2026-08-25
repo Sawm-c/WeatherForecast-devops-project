@@ -30,15 +30,13 @@ module "security_db" {
 }
 
 module "database" {
-  source                    = "./modules/database"
-  subnet_id                 = module.network.private_subnets[0]
-  common_tags               = var.common_tags
-  database_sg_id            = module.security_db.database_sg_id
-  aws_instance              = var.aws_instance
-  instance_type             = var.instance_type
-  iam_instance_profile_name = module.iam.iam_instance_profile_name
-  weather_key_name          = aws_key_pair.weatherforecast_key.key_name
-  bucket_id                 = module.storage.bucket_id
+  source         = "./modules/database"
+  subnet_ids     = module.network.private_subnets
+  common_tags    = var.common_tags
+  database_sg_id = module.security_db.database_sg_id
+  db_name        = var.db_name
+  db_username    = var.db_username
+  db_password    = var.db_password
 }
 
 module "storage" {

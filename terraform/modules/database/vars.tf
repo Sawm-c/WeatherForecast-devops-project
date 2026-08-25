@@ -2,30 +2,27 @@ variable "common_tags" {
   type = map(string)
 }
 
-variable "subnet_id" {
-  type = string
+variable "subnet_ids" {
+  type        = list(string)
+  description = "Danh sách private subnet IDs cho RDS subnet group (cần >= 2 AZ)"
 }
 
 variable "database_sg_id" {
   type = string
 }
 
-variable "aws_instance" {
-  type = string
+variable "db_name" {
+  type        = string
+  description = "Tên database khởi tạo trong RDS"
 }
 
-variable "instance_type" {
-  type = string
+variable "db_username" {
+  type        = string
+  description = "Username đăng nhập RDS"
 }
 
-variable "iam_instance_profile_name" {
-  type = string
-}
-
-variable "bucket_id" {
-  type = string
-}
-
-variable "weather_key_name" {
-  type = string
+variable "db_password" {
+  type        = string
+  sensitive   = true
+  description = "Password đăng nhập RDS"
 }
